@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>本来のエンジン診断 | LunaRa Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Noto+Serif+JP:wght@200;300;400&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #C9A84C;
+  --gold-light: #E8C97A;
+  --deep: #080608;
+  --mid: #1E1518;
+  --text-bright: #F5EDE0;
+  --text-mid: #C8B09A;
+  --text-dim: #7A6A60;
+  --magenta: #8B2055;
+  --magenta-light: #C45C8A;
+  --teal: #1E6B7A;
+  --teal-light: #3DA8B8;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--deep);
+  color: var(--text-bright);
+  font-family: 'Noto Serif JP', serif;
+  font-weight: 300;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.cosmos {
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 20% 10%, rgba(201,168,76,0.07) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 60% at 80% 80%, rgba(139,32,85,0.06) 0%, transparent 55%),
+    linear-gradient(160deg, #080608 0%, #12080E 40%, #080A12 100%);
+  pointer-events: none;
+}
+
+.cosmos::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 15%, rgba(201,168,76,0.6) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 40% 20%, rgba(201,168,76,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 70% 10%, rgba(240,210,200,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 85% 35%, rgba(201,168,76,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 25% 60%, rgba(240,210,200,0.3) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 60% 70%, rgba(201,168,76,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 60%, rgba(240,210,200,0.3) 0%, transparent 100%);
+  animation: starPulse 8s ease-in-out infinite alternate;
+}
+
+@keyframes starPulse { 0%{opacity:.5} 100%{opacity:1} }
+
+.page {
+  position: relative; z-index: 1;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+.screen { display: none; }
+.screen.active { display: block; animation: fadeUp 0.7s ease forwards; }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(20px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+/* COVER */
+.cover {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; padding: 60px 0;
+}
+
+.cover-badge {
+  font-family: 'Cinzel', serif;
+  font-size: 10px; letter-spacing: 0.4em;
+  color: var(--gold); opacity: 0.8;
+  margin-bottom: 32px;
+}
+
+.cover-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(30px, 7vw, 52px);
+  font-weight: 300; line-height: 1.2;
+  margin-bottom: 8px;
+}
+
+.cover-title em { font-style: italic; color: var(--gold-light); display: block; }
+
+.cover-line {
+  display: flex; align-items: center; gap: 16px;
+  width: 100%; max-width: 320px;
+  margin: 20px auto 28px;
+}
+.cover-line::before, .cover-line::after {
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(201,168,76,0.5), transparent);
+}
+.cover-line span { color: var(--gold); font-size: 14px; }
+
+.cover-desc {
+  font-size: 14px; color: var(--text-mid);
+  line-height: 2.1; max-width: 440px;
+  margin: 0 auto 40px;
+}
+
+.cover-desc strong { color: var(--gold-light); font-weight: 400; }
+
+/* INPUT FORM */
+.input-card {
+  background: rgba(30,21,24,0.85);
+  border: 1px solid rgba(201,168,76,0.18);
+  border-radius: 2px;
+  padding: 40px 36px;
+  margin: 0 auto 32px;
+  position: relative; overflow: hidden;
+  max-width: 480px; width: 100%;
+}
+
+.input-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.input-label {
+  font-family: 'Cinzel', serif;
+  font-size: 9px; letter-spacing: 0.3em;
+  color: var(--gold); opacity: 0.8;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  display: block; text-align: center;
+}
+
+.date-row {
+  display: flex; gap: 12px; margin-bottom: 8px;
+}
+
+.date-field {
+  display: flex; flex-direction: column; gap: 8px;
+}
+
+.date-field label {
+  font-size: 11px; color: var(--text-dim);
+  letter-spacing: 0.1em; text-align: center;
+}
+
+.date-field select, .date-field input {
+  background: rgba(20,14,18,0.9);
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: 2px;
+  color: var(--text-bright);
+  font-family: 'Noto Serif JP', serif;
+  font-size: 14px;
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color 0.2s;
+  text-align: center;
+  -webkit-appearance: none;
+}
+
+.date-field select:focus, .date-field input:focus {
+  border-color: rgba(201,168,76,0.5);
+}
+
+.date-field.year { flex: 2; }
+.date-field.month { flex: 1.5; }
+.date-field.day { flex: 1.5; }
+
+.date-field select option { background: #1E1518; }
+
+.input-note {
+  font-size: 11px; color: var(--text-dim);
+  text-align: center; margin-top: 16px;
+  line-height: 1.8; letter-spacing: 0.05em;
+}
+
+.btn-analyze {
+  display: block; width: 100%;
+  background: linear-gradient(135deg, rgba(201,168,76,0.18), rgba(201,168,76,0.06));
+  border: 1px solid rgba(201,168,76,0.5);
+  color: var(--gold-light);
+  font-family: 'Noto Serif JP', serif;
+  font-size: 14px; letter-spacing: 0.15em;
+  padding: 18px; cursor: pointer;
+  transition: all 0.3s; margin-top: 24px;
+}
+
+.btn-analyze:hover:not(:disabled) {
+  border-color: var(--gold);
+  box-shadow: 0 0 30px rgba(201,168,76,0.15);
+  transform: translateY(-1px);
+}
+
+.btn-analyze:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* LOADING */
+.loading-screen {
+  min-height: 60vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; padding: 60px 0;
+}
+
+.loading-orbit {
+  width: 80px; height: 80px;
+  border: 1px solid rgba(201,168,76,0.2);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: orbit 1.5s linear infinite;
+  margin: 0 auto 32px;
+  position: relative;
+}
+
+.loading-orbit::after {
+  content: '✦';
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--gold); font-size: 20px;
+  animation: counterOrbit 1.5s linear infinite;
+}
+
+@keyframes orbit { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+@keyframes counterOrbit { from{transform:translate(-50%,-50%) rotate(0deg)} to{transform:translate(-50%,-50%) rotate(-360deg)} }
+
+.loading-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px; font-weight: 300;
+  color: var(--text-mid);
+  letter-spacing: 0.15em;
+  margin-bottom: 8px;
+}
+
+.loading-sub {
+  font-size: 12px; color: var(--text-dim);
+  letter-spacing: 0.1em;
+  animation: blink 2s ease-in-out infinite;
+}
+
+@keyframes blink { 0%,100%{opacity:.4} 50%{opacity:1} }
+
+/* RESULT */
+.result-header {
+  text-align: center; padding: 48px 0 32px;
+}
+
+.result-eyebrow {
+  font-family: 'Cinzel', serif;
+  font-size: 9px; letter-spacing: 0.4em;
+  color: var(--gold); opacity: 0.7;
+  text-transform: uppercase; margin-bottom: 16px;
+}
+
+.result-date {
+  font-size: 12px; color: var(--text-dim);
+  letter-spacing: 0.2em; margin-bottom: 24px;
+}
+
+/* Result Cards */
+.result-section {
+  margin-bottom: 16px;
+}
+
+.r-card {
+  background: rgba(30,21,24,0.8);
+  border: 1px solid rgba(201,168,76,0.12);
+  border-radius: 2px;
+  padding: 24px 28px;
+  margin-bottom: 14px;
+  position: relative; overflow: hidden;
+}
+
+.r-card::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+  background: linear-gradient(180deg, var(--gold), var(--gold-light));
+}
+
+.r-card.accent-magenta::before {
+  background: linear-gradient(180deg, var(--magenta), var(--magenta-light));
+}
+
+.r-card.accent-teal::before {
+  background: linear-gradient(180deg, var(--teal), var(--teal-light));
+}
+
+.r-label {
+  font-family: 'Cinzel', serif;
+  font-size: 9px; letter-spacing: 0.25em;
+  color: var(--gold); text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.r-card.accent-magenta .r-label { color: var(--magenta-light); }
+.r-card.accent-teal .r-label { color: var(--teal-light); }
+
+.r-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(18px, 3.5vw, 24px);
+  font-weight: 400; color: var(--text-bright);
+  margin-bottom: 10px; line-height: 1.4;
+}
+
+.r-body {
+  font-size: 14px; line-height: 2;
+  color: var(--text-mid);
+}
+
+.r-body strong { color: var(--gold-light); font-weight: 400; }
+.r-card.accent-magenta .r-body strong { color: var(--magenta-light); }
+.r-card.accent-teal .r-body strong { color: var(--teal-light); }
+
+/* 一言カード */
+.oneliner-card {
+  background: linear-gradient(135deg, rgba(201,168,76,0.1), rgba(201,168,76,0.04));
+  border: 1px solid rgba(201,168,76,0.3);
+  border-radius: 2px;
+  padding: 32px;
+  text-align: center;
+  margin-bottom: 16px;
+  position: relative; overflow: hidden;
+}
+
+.oneliner-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.oneliner-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(16px, 3.5vw, 22px);
+  font-weight: 300; font-style: italic;
+  color: var(--gold-light); line-height: 1.8;
+}
+
+/* CTA */
+.cta-section {
+  margin-top: 32px;
+  background: rgba(30,21,24,0.8);
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: 2px; padding: 36px 32px;
+  text-align: center;
+  position: relative; overflow: hidden;
+}
+
+.cta-section::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.cta-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(18px, 4vw, 24px);
+  font-weight: 300; color: var(--text-bright);
+  line-height: 1.6; margin-bottom: 8px;
+}
+
+.cta-title em { font-style: italic; color: var(--gold-light); }
+
+.cta-sub {
+  font-size: 13px; color: var(--text-dim);
+  line-height: 1.9; margin-bottom: 24px;
+}
+
+.btn-engine {
+  display: block;
+  background: rgba(30,21,24,0.8);
+  border: 1px solid rgba(201,168,76,0.3);
+  color: var(--text-mid);
+  font-family: 'Noto Serif JP', serif;
+  font-size: 13px; letter-spacing: 0.1em;
+  padding: 14px 24px; text-decoration: none;
+  transition: all 0.25s; margin-bottom: 12px;
+  text-align: center;
+}
+
+.btn-engine:hover {
+  border-color: rgba(201,168,76,0.5);
+  color: var(--gold-light);
+}
+
+.btn-line {
+  display: block;
+  background: linear-gradient(135deg, rgba(201,168,76,0.2), rgba(201,168,76,0.08));
+  border: 1px solid rgba(201,168,76,0.5);
+  color: var(--gold-light);
+  font-family: 'Noto Serif JP', serif;
+  font-size: 14px; letter-spacing: 0.12em;
+  padding: 18px 32px; text-decoration: none;
+  transition: all 0.3s; margin-bottom: 12px;
+  text-align: center;
+}
+
+.btn-line:hover {
+  border-color: var(--gold);
+  box-shadow: 0 0 24px rgba(201,168,76,0.15);
+}
+
+.cta-note {
+  font-size: 11px; color: var(--text-dim);
+  letter-spacing: 0.08em;
+}
+
+.restart-btn {
+  display: inline-block; margin-top: 20px;
+  background: transparent;
+  border: 1px solid rgba(201,168,76,0.2);
+  color: var(--text-dim);
+  font-family: 'Noto Serif JP', serif;
+  font-size: 12px; padding: 10px 24px;
+  cursor: pointer; letter-spacing: 0.1em;
+  transition: all 0.25s;
+}
+
+.restart-btn:hover {
+  border-color: rgba(201,168,76,0.4);
+  color: var(--gold-light);
+}
+
+/* ERROR */
+.error-msg {
+  color: var(--magenta-light);
+  font-size: 12px; text-align: center;
+  margin-top: 12px; letter-spacing: 0.05em;
+  display: none;
+}
+</style>
+</head>
+<body>
+<div class="cosmos"></div>
+<div class="page">
+
+  <!-- COVER -->
+  <div id="screen-cover" class="screen active">
+    <div class="cover">
+      <div class="cover-badge">LunaRa Lab × Soul RPG</div>
+      <div class="cover-title">
+        あなたが生まれ持った<em>本来のエンジン</em>
+      </div>
+      <div class="cover-line"><span>◆</span></div>
+      <p class="cover-desc">
+        今の自分の動き方は、<br>
+        <strong>本来の自分</strong>と一致していますか？<br><br>
+        生年月日から、<br>
+        あなたが<strong>生まれ持ったエンジンタイプ</strong>を<br>解析します。<br><br>
+        「なぜ自分はこう動くのか」——<br>
+        その答えがここにあります。
+      </p>
+
+      <div class="input-card">
+        <span class="input-label">生年月日を入力してください</span>
+        <div class="date-row">
+          <div class="date-field year">
+            <label>年</label>
+            <input type="number" id="input-year" placeholder="例：1990"
+              min="1940" max="2010" inputmode="numeric">
+          </div>
+          <div class="date-field month">
+            <label>月</label>
+            <select id="input-month">
+              <option value="">月</option>
+              <option value="1">1月</option>
+              <option value="2">2月</option>
+              <option value="3">3月</option>
+              <option value="4">4月</option>
+              <option value="5">5月</option>
+              <option value="6">6月</option>
+              <option value="7">7月</option>
+              <option value="8">8月</option>
+              <option value="9">9月</option>
+              <option value="10">10月</option>
+              <option value="11">11月</option>
+              <option value="12">12月</option>
+            </select>
+          </div>
+          <div class="date-field day">
+            <label>日</label>
+            <select id="input-day">
+              <option value="">日</option>
+              <option value="1">1日</option>
+              <option value="2">2日</option>
+              <option value="3">3日</option>
+              <option value="4">4日</option>
+              <option value="5">5日</option>
+              <option value="6">6日</option>
+              <option value="7">7日</option>
+              <option value="8">8日</option>
+              <option value="9">9日</option>
+              <option value="10">10日</option>
+              <option value="11">11日</option>
+              <option value="12">12日</option>
+              <option value="13">13日</option>
+              <option value="14">14日</option>
+              <option value="15">15日</option>
+              <option value="16">16日</option>
+              <option value="17">17日</option>
+              <option value="18">18日</option>
+              <option value="19">19日</option>
+              <option value="20">20日</option>
+              <option value="21">21日</option>
+              <option value="22">22日</option>
+              <option value="23">23日</option>
+              <option value="24">24日</option>
+              <option value="25">25日</option>
+              <option value="26">26日</option>
+              <option value="27">27日</option>
+              <option value="28">28日</option>
+              <option value="29">29日</option>
+              <option value="30">30日</option>
+              <option value="31">31日</option>
+            </select>
+          </div>
+        </div>
+
+        <p class="input-note">入力された生年月日は診断にのみ使用します</p>
+        <div class="error-msg" id="error-msg">生年月日を正しく入力してください</div>
+        <button class="btn-analyze" id="btn-analyze" onclick="startAnalysis()">
+          ✦ 本来のエンジンを解析する
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div id="screen-loading" class="screen">
+    <div class="loading-screen">
+      <div class="loading-orbit"></div>
+      <div class="loading-text">解析中...</div>
+      <div class="loading-sub">あなたの本来のエンジンを読み解いています</div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="screen-result" class="screen">
+    <div id="result-content"></div>
+  </div>
+
+</div>
+
+<script>
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function getZodiacSign(month, day) {
+  var m = parseInt(month), d = parseInt(day);
+  if ((m===3&&d>=21)||(m===4&&d<=19)) return '牡羊座';
+  if ((m===4&&d>=20)||(m===5&&d<=20)) return '牡牛座';
+  if ((m===5&&d>=21)||(m===6&&d<=21)) return '双子座';
+  if ((m===6&&d>=22)||(m===7&&d<=22)) return '蟹座';
+  if ((m===7&&d>=23)||(m===8&&d<=22)) return '獅子座';
+  if ((m===8&&d>=23)||(m===9&&d<=22)) return '乙女座';
+  if ((m===9&&d>=23)||(m===10&&d<=23)) return '天秤座';
+  if ((m===10&&d>=24)||(m===11&&d<=22)) return '蠍座';
+  if ((m===11&&d>=23)||(m===12&&d<=21)) return '射手座';
+  if ((m===12&&d>=22)||(m===1&&d<=19)) return '山羊座';
+  if ((m===1&&d>=20)||(m===2&&d<=18)) return '水瓶座';
+  return '魚座';
+}
+
+function getElement(zodiac) {
+  var fire = ['牡羊座','獅子座','射手座'];
+  var earth = ['牡牛座','乙女座','山羊座'];
+  var air = ['双子座','天秤座','水瓶座'];
+  if (fire.indexOf(zodiac) >= 0) return '火';
+  if (earth.indexOf(zodiac) >= 0) return '地';
+  if (air.indexOf(zodiac) >= 0) return '風';
+  return '水';
+}
+
+function getLifePath(year, month, day) {
+  var str = String(year) + String(month) + String(day);
+  var sum = str.split('').reduce(function(a,b){ return a + parseInt(b); }, 0);
+  while (sum > 9 && sum !== 11 && sum !== 22 && sum !== 33) {
+    var s = String(sum).split('');
+    sum = s.reduce(function(a,b){ return a + parseInt(b); }, 0);
+  }
+  return sum;
+}
+
+function calcEngineType(year, month, day) {
+  var zodiac = getZodiacSign(month, day);
+  var element = getElement(zodiac);
+  var lp = getLifePath(year, month, day);
+
+  var typeData = {
+    'IAM':         { name: '開拓者型', en: 'THE PIONEER',   sub: '存在エンジン' },
+    'IFEEL':       { name: '感覚者型', en: 'THE FEELER',    sub: '五感エンジン' },
+    'ICREATE':     { name: '表現者型', en: 'THE CREATOR',   sub: '創造エンジン' },
+    'ILOVE':       { name: '愛着者型', en: 'THE NURTURER',  sub: '愛情エンジン' },
+    'IEXPRESS':    { name: '伝達者型', en: 'THE MESSENGER', sub: '知性エンジン' },
+    'ISEE':        { name: '設計者型', en: 'THE ARCHITECT', sub: '具現化エンジン' },
+    'IUNDERSTAND': { name: '解放者型', en: 'THE VISIONARY', sub: '宇宙エンジン' }
+  };
+
+  var mainKey;
+  if (element === '火') {
+    mainKey = (lp===3||lp===6) ? 'ICREATE' : 'IAM';
+  } else if (element === '地') {
+    mainKey = (lp===2||lp===6) ? 'IFEEL' : 'ISEE';
+  } else if (element === '風') {
+    if (lp===5||lp===11) mainKey = 'IUNDERSTAND';
+    else if (lp===3||lp===33) mainKey = 'ICREATE';
+    else mainKey = 'IEXPRESS';
+  } else {
+    mainKey = (lp===2||lp===6) ? 'IFEEL' : 'ILOVE';
+  }
+
+  var lpMap = {1:'IAM',2:'ILOVE',3:'ICREATE',4:'ISEE',5:'IUNDERSTAND',6:'IFEEL',7:'ISEE',8:'IAM',9:'IUNDERSTAND',11:'IEXPRESS',22:'ISEE',33:'ICREATE'};
+  var subKey = lpMap[lp] || 'IEXPRESS';
+  if (subKey === mainKey) {
+    var fallback = ['IAM','IFEEL','ICREATE','ILOVE','IEXPRESS','ISEE','IUNDERSTAND'];
+    for (var i=0; i<fallback.length; i++) {
+      if (fallback[i] !== mainKey) { subKey = fallback[i]; break; }
+    }
+  }
+
+  return { main: typeData[mainKey], sub: typeData[subKey], mainKey: mainKey, subKey: subKey, zodiac: zodiac, element: element, lp: lp };
+}
+
+var typeTexts = {
+  IAM: {
+    why: '思考より先に体が動く。「なんかいける気がする」という感覚が起点で、決めた瞬間にエンジンが回り始める。動きながら考える方が自然。',
+    accelerate: '自分で決めた時。誰かに言われてではなく「自分がそうしたい」という衝動がある時に現実が動き出す。新しい場所・新しい挑戦も燃料になる。',
+    stop: '義務感・他人のペースに合わせ続ける時。「やらなければ」が増えると、エンジンが静かに止まる。指示待ちの環境も苦手。',
+    zone: '全部自分で決めて動いている日。誰にも何も言われていないのに、気づいたら一日中動いていた。あの日の軽さと速さ。',
+    empty: 'やる気が出ない・体が重い・何をしても空回りする。エネルギー切れではなく「自分で選んでいない」サイン。',
+    gap: '「誰かのため」「義務感」ベースで動いている時、本来のエンジンとズレが生じる。承認を待つ状態が最もズレやすい。',
+    hint: '今日一つだけ、誰にも言わずに自分だけのために何かを決めてみる。小さな自己決定がエンジンの再起動になる。',
+    oneliner: '「自分が決めた」という感覚がある時だけ、本当の力が出る人。',
+    feeling: '毎朝、今日何をするかを自分で決めている。誰かの予定ではなく、自分の衝動が一日の設計図になっている。それだけで、なぜか全部うまく動く。'
+  },
+  IFEEL: {
+    why: '五感が満たされている時だけ、本当の力が出る。好きな香り・美しい空間・おいしい食事——それが思考をクリアにして、体からエネルギーが湧いてくる。',
+    accelerate: '環境が整っている時。好きな場所・心地よい音楽・美しいものに囲まれている時に、思考とアイデアが自然と流れ出す。',
+    stop: '義務感で動き続ける時・五感が満たされていない時。殺風景な環境や、ずっと同じ場所にいることでエネルギーが枯渇する。',
+    zone: 'お気に入りの場所で、好きな音楽を聴きながら、ふと手が止まらなくなった日。体が喜んでいる状態の時、仕事が遊びになる。',
+    empty: '何をしても楽しくない・疲れが取れない。怠けではなく、五感へのインプットが足りていないサイン。',
+    gap: '「まず生産性」「まず結果」と五感を後回しにしている時が最もズレやすい。心地よさはこのエンジンの燃料。',
+    hint: '今すぐ一つ、五感が喜ぶことをする。好きな香りを嗅ぐ・美味しいものを丁寧に食べる・好きな音楽をかける。それだけでエンジンが再起動する。',
+    oneliner: '五感が喜んでいる時だけ、本当のパフォーマンスが出る人。',
+    feeling: '好きな場所で、好きなものに囲まれて、好きなことをしている。それが「普通の一日」になった時、驚くほど自然に結果がついてくる。'
+  },
+  ICREATE: {
+    why: '言葉にした瞬間、現実が動き始める。「私はこうする」と宣言した瞬間にエンジンが起動する。表現することが呼吸のように自然で、それを止めると止まる。',
+    accelerate: '自己表現が許されている環境。「私らしくやっていい」という空気がある時、才能が一気に開花する。誰かに見てもらえる場も燃料になる。',
+    stop: '自分を抑えている時・評価が気になりすぎる時。「どう思われるか」が先に来ると、エンジンがかからない。',
+    zone: '「これを伝えたい」という衝動が先に来て、気づいたら形になっていた日。誰かの反応より先に、自分が動いていた。',
+    empty: '何も作りたくない・発信する気になれない。才能が枯れたのではなく、承認不足か自己抑圧のサイン。',
+    gap: '「まず結果を出してから表現しよう」と順番を逆にしている時がズレやすい。表現が先で、結果はあとからついてくる。',
+    hint: '今日、一つだけ「完璧じゃなくていい」ものを外に出す。出した瞬間にエンジンが回り始める。',
+    oneliner: '言葉にして外に出した瞬間、現実が動き始める人。',
+    feeling: '毎日何かを作っている。完璧じゃなくていい。形にして出すたびに、次のアイデアが湧いてくる。それが止まらない状態が、本来の日常。'
+  },
+  ILOVE: {
+    why: '深い信頼関係の中でこそ、本当の力が出る。「この人となら」という安心感が、能力の蓋を開ける鍵。表面的な関係では、力の半分も出ない。',
+    accelerate: '信頼できる人と一緒にいる時。「ありのままでいい」と感じられる関係の中で、このエンジンは最大出力になる。',
+    stop: '傷つくことへの恐れで心を閉じた時。表面的な関係しかない環境では、エネルギーが内側に向かって滞る。',
+    zone: '信頼している人のために動いた日。「この人のために」という純粋な愛が起点になった時、自分でも驚くほどの力が出た。',
+    empty: '誰とも深く繋がれていない感覚・孤独感。エネルギー不足ではなく、愛の循環が止まっているサイン。',
+    gap: '「迷惑をかけたくない」と一人で抱えている時がズレやすい。このエンジンは繋がりの中でしか回らない。',
+    hint: '今日、信頼している人に「ありがとう」か「助けて」を一言伝えてみる。愛の回路が開いた瞬間、エンジンが動き出す。',
+    oneliner: '信頼できる人との深い繋がりの中でだけ、本当の力が出る人。',
+    feeling: '一緒にいると自然体でいられる人がいる。その人たちとの時間が増えるにつれて、仕事も暮らしも、なぜかうまく回り始めた。'
+  },
+  IEXPRESS: {
+    why: '話しながら考えが整理される。アウトプットすることで思考が深まり、知識を自分の言葉に変換した瞬間にエンジンが点火する。',
+    accelerate: '新しいことを学んで、誰かに話せる時。「これ面白い」という好奇心が起点になって、次々と繋がりが見えてくる。',
+    stop: 'コミュニケーションを恐れて黙っている時・ネガティブな思考ループに入った時。言葉を止めるとエンジンも止まる。',
+    zone: '話しながら「あ、そういうことか」と自分でも気づいていた日。アウトプットが思考を追い越していく感覚。',
+    empty: '何も話したくない・情報収集する気になれない。飽き性ではなく、アウトプット不足のサイン。',
+    gap: '「完全に理解してから話そう」と待っている時がズレやすい。このエンジンは話しながら理解が深まる構造。',
+    hint: '今日学んだことを、誰かに一言だけ話す。それだけで次のアイデアへの扉が開く。',
+    oneliner: 'アウトプットすることで思考が深まり、現実が動き出す人。',
+    feeling: '毎日誰かと話して、毎日何かを書いている。知識が自分の言葉になった瞬間、世界の解像度が上がる。それが日常になった時、結果がついてくる。'
+  },
+  ISEE: {
+    why: '腑に落ちた瞬間に動き出す。「なぜそうなるのか」が見えるまで待てるし、見えた瞬間に誰より速く動ける。深い理解がこのエンジンの点火装置。',
+    accelerate: '全体像が見えている時。「これはこういう仕組みだ」と腑に落ちた瞬間、驚くほどのスピードで動き出す。設計することで才能が開花する。',
+    stop: '理解できないまま動かされる時・完璧主義の鎧を着ている時。「まだ準備が足りない」という思考ループが最大の障害。',
+    zone: 'バラバラだったものが一気に繋がった日。「そういうことか」という腑落ちの後、手が止まらなくなった。あの感覚。',
+    empty: '考えすぎて動けない・全部中途半端に感じる。能力不足ではなく、まだ全体像が見えていないだけ。',
+    gap: '「動きながら考える」を無理にやろうとしている時がズレやすい。「理解してから動く」が自然な順番。',
+    hint: '今悩んでいることの「全体像」を紙に書いて整理する。見えた瞬間、自然に体が動き出す。',
+    oneliner: '腑に落ちた瞬間だけ、誰より速く深く動ける人。',
+    feeling: '全部が繋がって見える瞬間がある。その瞬間から動き始めると、どんなことも設計図通りに進んでいく。それが本来の日常。'
+  },
+  IUNDERSTAND: {
+    why: '手放した瞬間に流れが来る。執着を手放し、枠を超えた時に加速する。「もういい」と思った瞬間に、むしろ物事が動き始めた経験が何度もある。',
+    accelerate: '手放している時・流れに委ねている時。コントロールしようとするほど止まり、手放すほど動く。俯瞰できている時が最大出力。',
+    stop: 'エゴで状況をコントロールしようとする時。「こうでなければならない」という執着が強い時、エンジンが逆回転する。',
+    zone: '全部諦めてふっと力を抜いた日、急に物事が動き始めた。頑張るのをやめた瞬間に、なぜか全部うまくいった。あの感覚。',
+    empty: '頑張っているのに何も動かない・疲弊している。エネルギー切れではなく、手放せていないサイン。',
+    gap: '「もっと努力しなければ」と力を入れている時がズレやすい。このエンジンは力を抜くことで回転する。',
+    hint: '今一番執着していることを一つ選んで「もうどちらでもいい」と声に出してみる。それだけで流れが変わることがある。',
+    oneliner: '手放した瞬間に流れが来て、枠を超えた時に加速する人。',
+    feeling: '必死に追いかけるのをやめた日から、物事が向こうからやってくるようになった。それが本来の流れ方。'
+  }
+};
+
+function startAnalysis() {
+  var year = parseInt(document.getElementById('input-year').value);
+  var month = parseInt(document.getElementById('input-month').value);
+  var day = parseInt(document.getElementById('input-day').value);
+  var errMsg = document.getElementById('error-msg');
+
+  if (!year || !month || !day || year < 1940 || year > 2010) {
+    errMsg.style.display = 'block';
+    return;
+  }
+  errMsg.style.display = 'none';
+  showScreen('screen-loading');
+
+  setTimeout(function() {
+    var result = calcEngineType(year, month, day);
+    var birthdate = year + '年' + month + '月' + day + '日';
+    showScreen('screen-result');
+    renderResult(result, birthdate);
+  }, 1800);
+}
+
+function renderResult(result, birthdate) {
+  var t = typeTexts[result.mainKey];
+  var s = typeTexts[result.subKey];
+
+  var html = '<div class="result-header">' +
+    '<div class="result-eyebrow">Origin Engine Analysis</div>' +
+    '<div class="result-date">' + birthdate + '生まれ</div>' +
+    '</div>' +
+
+    '<div class="r-card">' +
+    '<div class="r-label">◆ 本来のエンジン</div>' +
+    '<div class="r-title">' + result.main.name + ' ' + result.main.en + ' — ' + result.main.sub + '</div>' +
+    '</div>' +
+
+    '<div class="r-card accent-teal">' +
+    '<div class="r-label">◆ 補助エンジン</div>' +
+    '<div class="r-title">' + result.sub.name + ' ' + result.sub.en + ' — ' + result.sub.sub + '</div>' +
+    '</div>' +
+
+    '<div class="r-card">' +
+    '<div class="r-label">◆ なぜそのタイプなのか</div>' +
+    '<div class="r-body">' + t.why + '</div>' +
+    '</div>' +
+
+    '<div class="r-card accent-teal">' +
+    '<div class="r-label">◆ 現実加速しやすい条件</div>' +
+    '<div class="r-body">' + t.accelerate + '</div>' +
+    '</div>' +
+
+    '<div class="r-card accent-magenta">' +
+    '<div class="r-label">◆ 止まりやすい条件</div>' +
+    '<div class="r-body">' + t.stop + '</div>' +
+    '</div>' +
+
+    '<div class="r-card">' +
+    '<div class="r-label">◆ 自分の中で何かが噛み合った、あの感覚</div>' +
+    '<div class="r-body">' + t.zone + '</div>' +
+    '</div>' +
+
+    '<div class="r-card accent-magenta">' +
+    '<div class="r-label">◆ 空回りサイン</div>' +
+    '<div class="r-body">' + t.empty + '</div>' +
+    '</div>' +
+
+    '<div class="r-card accent-magenta">' +
+    '<div class="r-label">◆ 今の動き方とのズレ（適応モード）</div>' +
+    '<div class="r-body">' + t.gap + '</div>' +
+    '</div>' +
+
+    '<div class="r-card accent-teal">' +
+    '<div class="r-label">◆ 本来の自分に戻るヒント</div>' +
+    '<div class="r-body">' + t.hint + '</div>' +
+    '</div>' +
+
+    '<div class="oneliner-card">' +
+    '<div class="r-label" style="text-align:center;margin-bottom:16px;">◆ 一言で言うと</div>' +
+    '<div class="oneliner-text">' + t.oneliner + '</div>' +
+    '</div>' +
+
+    '<div class="r-card">' +
+    '<div class="r-label">◆ 本来のエンジンで生き始めた時の人生感覚</div>' +
+    '<div class="r-body">' + t.feeling + '</div>' +
+    '</div>' +
+
+    '<div class="cta-section">' +
+    '<div class="cta-title">今の動き方と、<em>本来のエンジンは一致していますか？</em></div>' +
+    '<p class="cta-sub">今の自分の動き方を診断して、<br>本来との差を確認してみてください。</p>' +
+    '<a href="lunara-engine-type.html" class="btn-engine">← 今の動き方を診断する</a>' +
+    '<a href="https://lin.ee/qoNCvEH" target="_blank" class="btn-line">✦ LunaRa Lab . Hideka に相談する</a>' +
+    '<p class="cta-note">公式LINEよりお問い合わせください</p>' +
+    '</div>' +
+
+    '<div style="text-align:center;padding:24px 0 0;">' +
+    '<button class="restart-btn" onclick="restartApp()">← もう一度診断する</button>' +
+    '</div>';
+
+  document.getElementById('result-content').innerHTML = html;
+}
+
+function restartApp() {
+  document.getElementById('input-year').value = '';
+  document.getElementById('input-month').value = '';
+  document.getElementById('input-day').value = '';
+  showScreen('screen-cover');
+}
+</script>
+
+</body>
+</html>
