@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人生エンジンタイプ診断 | LunaRa Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Noto+Serif+JP:wght@200;300;400&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #C9A84C;
+  --gold-light: #E8C97A;
+  --deep: #080608;
+  --dark: #120D10;
+  --mid: #1E1518;
+  --text-bright: #F5EDE0;
+  --text-mid: #C8B09A;
+  --text-dim: #7A6A60;
+
+  /* タイプカラー */
+  --iam: #E85D3A;
+  --ifeel: #C45C8A;
+  --icreate: #E8A020;
+  --ilove: #4A9E8C;
+  --iexpress: #5B8FD4;
+  --isee: #8B6FD4;
+  --iunderstand: #3DA8B8;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--deep);
+  color: var(--text-bright);
+  font-family: 'Noto Serif JP', serif;
+  font-weight: 300;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.cosmos {
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 20% 10%, rgba(201,168,76,0.07) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 60% at 80% 80%, rgba(196,92,138,0.06) 0%, transparent 55%),
+    linear-gradient(160deg, #080608 0%, #12080E 40%, #080A12 100%);
+  pointer-events: none;
+}
+
+.cosmos::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 15%, rgba(201,168,76,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 30% 8%, rgba(240,210,200,0.4) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 55% 20%, rgba(201,168,76,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 75% 12%, rgba(240,210,200,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 88% 30%, rgba(201,168,76,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 20% 60%, rgba(240,210,200,0.3) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 65% 70%, rgba(201,168,76,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 90% 55%, rgba(240,210,200,0.3) 0%, transparent 100%);
+  animation: starPulse 8s ease-in-out infinite alternate;
+}
+
+@keyframes starPulse { 0%{opacity:.5} 100%{opacity:1} }
+
+.page {
+  position: relative; z-index: 1;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+/* SCREEN */
+.screen { display: none; }
+.screen.active { display: block; animation: fadeUp 0.7s ease forwards; }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(20px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+/* COVER */
+.cover {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; padding: 60px 0;
+}
+
+.cover-badge {
+  font-family: 'Cinzel', serif;
+  font-size: 10px; letter-spacing: 0.4em;
+  color: var(--gold); opacity: 0.8;
+  margin-bottom: 32px;
+}
+
+.cover-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(32px, 8vw, 56px);
+  font-weight: 300; line-height: 1.2;
+  margin-bottom: 8px;
+}
+
+.cover-title em { font-style: italic; color: var(--gold-light); display: block; }
+
+.cover-sub {
+  font-size: 13px; color: var(--text-dim);
+  letter-spacing: 0.1em; margin: 20px 0 12px;
+  line-height: 1.9;
+}
+
+.cover-line {
+  display: flex; align-items: center; gap: 16px;
+  width: 100%; max-width: 320px;
+  margin: 20px auto 32px;
+}
+.cover-line::before, .cover-line::after {
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(201,168,76,0.5), transparent);
+}
+.cover-line span { color: var(--gold); font-size: 14px; }
+
+.cover-desc {
+  font-size: 14px; color: var(--text-mid);
+  line-height: 2; max-width: 440px;
+  margin: 0 auto 40px;
+}
+
+.btn-start {
+  display: inline-block;
+  background: linear-gradient(135deg, rgba(201,168,76,0.18), rgba(201,168,76,0.06));
+  border: 1px solid rgba(201,168,76,0.5);
+  color: var(--gold-light);
+  font-family: 'Noto Serif JP', serif;
+  font-size: 14px; letter-spacing: 0.15em;
+  padding: 18px 48px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-start:hover {
+  border-color: var(--gold);
+  box-shadow: 0 0 30px rgba(201,168,76,0.15);
+  transform: translateY(-2px);
+}
+
+/* PROGRESS */
+.progress-wrap {
+  padding: 48px 0 32px;
+  display: flex; align-items: center; gap: 14px;
+}
+
+.progress-bar {
+  flex: 1; height: 2px;
+  background: rgba(201,168,76,0.12);
+  border-radius: 1px; overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--gold-light));
+  transition: width 0.5s ease;
+}
+
+.progress-label {
+  font-family: 'Cinzel', serif;
+  font-size: 10px; letter-spacing: 0.2em;
+  color: var(--text-dim); white-space: nowrap;
+}
+
+/* QUESTION */
+.q-category {
+  font-family: 'Cinzel', serif;
+  font-size: 9px; letter-spacing: 0.3em;
+  color: var(--gold); opacity: 0.7;
+  text-transform: uppercase; margin-bottom: 14px;
+}
+
+.q-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(20px, 4.5vw, 30px);
+  font-weight: 300; line-height: 1.5;
+  color: var(--text-bright); margin-bottom: 8px;
+}
+
+.q-sub {
+  font-size: 13px; color: var(--text-dim);
+  line-height: 1.8; margin-bottom: 32px;
+}
+
+.options { display: flex; flex-direction: column; gap: 12px; }
+
+.option-btn {
+  background: rgba(30,21,24,0.7);
+  border: 1px solid rgba(201,168,76,0.12);
+  border-radius: 2px;
+  padding: 18px 22px;
+  cursor: pointer; text-align: left;
+  color: var(--text-mid);
+  font-family: 'Noto Serif JP', serif;
+  font-size: 14px; line-height: 1.8;
+  transition: all 0.25s;
+  position: relative; overflow: hidden;
+}
+
+.option-btn::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--gold);
+  transform: scaleY(0); transition: transform 0.25s;
+}
+
+.option-btn:hover {
+  border-color: rgba(201,168,76,0.35);
+  color: var(--text-bright);
+  background: rgba(44,35,24,0.8);
+  transform: translateX(4px);
+}
+
+.option-btn:hover::before { transform: scaleY(1); }
+.option-btn.selected { border-color: var(--gold); color: var(--gold-light); background: rgba(201,168,76,0.1); }
+.option-btn.selected::before { transform: scaleY(1); }
+
+.nav-row {
+  display: flex; gap: 12px; margin-top: 28px;
+}
+
+.btn-back {
+  background: transparent;
+  border: 1px solid rgba(201,168,76,0.2);
+  color: var(--text-dim);
+  font-family: 'Noto Serif JP', serif;
+  font-size: 13px; padding: 14px 20px;
+  cursor: pointer; transition: all 0.25s;
+}
+
+.btn-back:hover { border-color: rgba(201,168,76,0.4); color: var(--text-mid); }
+
+.btn-next {
+  flex: 1;
+  background: linear-gradient(135deg, rgba(201,168,76,0.18), rgba(201,168,76,0.06));
+  border: 1px solid rgba(201,168,76,0.4);
+  color: var(--gold-light);
+  font-family: 'Noto Serif JP', serif;
+  font-size: 14px; letter-spacing: 0.1em;
+  padding: 14px; cursor: pointer; transition: all 0.25s;
+}
+
+.btn-next:hover:not(:disabled) { border-color: var(--gold); box-shadow: 0 0 20px rgba(201,168,76,0.1); }
+.btn-next:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* RESULT */
+.result-header { text-align: center; padding: 48px 0 36px; }
+
+.result-eyebrow {
+  font-family: 'Cinzel', serif;
+  font-size: 9px; letter-spacing: 0.4em;
+  color: var(--gold); opacity: 0.7;
+  text-transform: uppercase; margin-bottom: 20px;
+}
+
+.result-type-badge {
+  display: inline-block;
+  font-family: 'Cinzel', serif;
+  font-size: 11px; letter-spacing: 0.3em;
+  padding: 7px 22px; margin-bottom: 20px;
+  border-radius: 1px;
+}
+
+.result-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(28px, 7vw, 48px);
+  font-weight: 300; line-height: 1.2;
+  margin-bottom: 8px;
+}
+
+.result-name em { font-style: italic; }
+
+.result-tagline {
+  font-size: 14px; color: var(--text-dim);
+  letter-spacing: 0.08em; line-height: 1.9;
+  margin-top: 12px;
+}
+
+/* Result Card */
+.result-card {
+  border-radius: 2px; padding: 28px 32px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(201,168,76,0.12);
+  background: rgba(30,21,24,0.8);
+  position: relative; overflow: hidden;
+}
+
+.result-card::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+}
+
+.card-label {
+  font-family: 'Cinzel', serif;
+  font-size: 9px; letter-spacing: 0.25em;
+  text-transform: uppercase; margin-bottom: 12px;
+}
+
+.result-card h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(18px, 3.5vw, 22px);
+  font-weight: 400; color: var(--text-bright);
+  margin-bottom: 12px; line-height: 1.4;
+}
+
+.result-card p, .result-card li {
+  font-size: 14px; line-height: 2; color: var(--text-mid);
+}
+
+.soul-list { list-style: none; }
+.soul-list li {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(201,168,76,0.07);
+  display: flex; gap: 12px;
+  font-size: 14px; line-height: 1.8; color: var(--text-mid);
+}
+.soul-list li:last-child { border-bottom: none; }
+.soul-bullet { flex-shrink: 0; margin-top: 6px; font-size: 7px; }
+
+/* Meter */
+.meter-card {
+  background: rgba(30,21,24,0.8);
+  border: 1px solid rgba(201,168,76,0.15);
+  border-radius: 2px; padding: 24px 28px;
+  margin-bottom: 16px;
+  position: relative; overflow: hidden;
+}
+.meter-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.meter-title {
+  font-family: 'Cinzel', serif; font-size: 9px;
+  letter-spacing: 0.25em; color: var(--text-dim);
+  text-transform: uppercase; margin-bottom: 16px; text-align: center;
+}
+.meter-row {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 10px;
+}
+.meter-row:last-child { margin-bottom: 0; }
+.meter-name {
+  font-size: 11px; color: var(--text-dim);
+  width: 80px; flex-shrink: 0; letter-spacing: 0.05em;
+}
+.meter-bar-bg {
+  flex: 1; height: 5px;
+  background: rgba(201,168,76,0.08);
+  border-radius: 100px; overflow: hidden;
+}
+.meter-bar-inner {
+  height: 100%; border-radius: 100px;
+  transition: width 1.5s cubic-bezier(0.22,1,0.36,1);
+}
+.meter-val {
+  font-family: 'Cinzel', serif; font-size: 10px;
+  width: 28px; text-align: right;
+}
+
+/* Chips */
+.chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.chip {
+  font-size: 11px; padding: 5px 13px;
+  border-radius: 100px; letter-spacing: 0.05em;
+  border: 1px solid rgba(201,168,76,0.3);
+  color: var(--gold-light);
+  background: rgba(201,168,76,0.06);
+}
+
+/* LINE CTA */
+.cta-section {
+  margin-top: 32px;
+  background: rgba(30,21,24,0.8);
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: 2px; padding: 32px;
+  text-align: center;
+  position: relative; overflow: hidden;
+}
+.cta-section::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.cta-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(18px, 4vw, 24px);
+  font-weight: 300; color: var(--text-bright);
+  line-height: 1.5; margin-bottom: 8px;
+}
+.cta-title em { font-style: italic; color: var(--gold-light); }
+.cta-sub {
+  font-size: 13px; color: var(--text-dim);
+  line-height: 1.9; margin-bottom: 24px;
+}
+.btn-line {
+  display: block;
+  background: linear-gradient(135deg, rgba(201,168,76,0.2), rgba(201,168,76,0.08));
+  border: 1px solid rgba(201,168,76,0.5);
+  color: var(--gold-light);
+  font-family: 'Noto Serif JP', serif;
+  font-size: 14px; letter-spacing: 0.12em;
+  padding: 18px 32px; text-decoration: none;
+  transition: all 0.3s; margin-bottom: 12px;
+}
+.btn-line:hover {
+  border-color: var(--gold);
+  box-shadow: 0 0 24px rgba(201,168,76,0.15);
+}
+.cta-note { font-size: 11px; color: var(--text-dim); letter-spacing: 0.08em; }
+
+.restart-btn {
+  display: inline-block; margin-top: 20px;
+  background: transparent;
+  border: 1px solid rgba(201,168,76,0.2);
+  color: var(--text-dim);
+  font-family: 'Noto Serif JP', serif;
+  font-size: 12px; padding: 10px 24px;
+  cursor: pointer; letter-spacing: 0.1em;
+  transition: all 0.25s;
+}
+.restart-btn:hover { border-color: rgba(201,168,76,0.4); color: var(--gold-light); }
+
+/* Grid 2 */
+.grid-2 {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 14px; margin-bottom: 16px;
+}
+@media(max-width:540px){ .grid-2{ grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="cosmos"></div>
+<div class="page">
+
+  <!-- COVER -->
+  <div id="screen-cover" class="screen active">
+    <div class="cover">
+      <div class="cover-badge">LunaRa Lab × Soul RPG</div>
+      <div class="cover-title">
+        あなたの人生が動く時——<em>そこには条件がある</em>
+      </div>
+      <div class="cover-line"><span>◆</span></div>
+      <p class="cover-desc">
+        7つの質問で、あなたの「動く条件」を解析します。<br><br>
+        これは性格診断ではありません。<br>
+        <strong style="color:var(--gold-light);font-weight:400;">あなたの人生エンジンの取扱説明書</strong>です。
+      </p>
+      <button class="btn-start" onclick="startDiagnosis()">✦ 診断をはじめる</button>
+    </div>
+  </div>
+
+  <!-- DIAGNOSIS -->
+  <div id="screen-diagnosis" class="screen">
+    <div class="progress-wrap">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+      <div class="progress-label" id="progress-label">1 / 7</div>
+    </div>
+    <div id="question-area"></div>
+    <div class="nav-row">
+      <button class="btn-back" id="btn-back" onclick="prevQ()" style="display:none">← 戻る</button>
+      <button class="btn-next" id="btn-next" onclick="nextQ()" disabled>次へ →</button>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="screen-result" class="screen">
+    <div id="result-content"></div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// QUESTIONS
+// ============================================================
+const questions = [
+  {
+    category: '起動条件',
+    text: '「よし、やるか」と自然に体が動いた時——\n何がきっかけでしたか？',
+    sub: '一番最初に浮かんだものを選んでください',
+    options: [
+      { text: '考えるのをやめて、とにかく動いた時', type: 'IAM' },
+      { text: '好きな場所・お気に入りの空間にいる時', type: 'IFEEL' },
+      { text: '誰かに「あなたに頼みたい」と言われた時', type: 'ICREATE' },
+      { text: '「なるほど、そういうことか」と腑に落ちた時', type: 'ISEE' }
+    ]
+  },
+  {
+    category: '空回りサイン',
+    text: 'エネルギーが突然切れる時、\n何が起きていることが多い？',
+    sub: '心当たりがあるものを選んでください',
+    options: [
+      { text: '「まだ準備が足りない」と動きを止められている', type: 'IAM' },
+      { text: '「楽しむ前にやることがある」と義務感が先に立っている', type: 'IFEEL' },
+      { text: '「なぜこうなったか」がわからないまま進まなければならない', type: 'ISEE' },
+      { text: '「自分の頑張りが、認められていない」と感じる時', type: 'ICREATE' }
+    ]
+  },
+  {
+    category: '人間関係',
+    text: '一緒にいると、なぜかやる気が出る人がいる。\nその人はどんな人？',
+    sub: '最も近いものを選んでください',
+    options: [
+      { text: '「じゃあ話を聞かせて」と、私の話を深く聞いてくれる人', type: 'ILOVE' },
+      { text: '「それ面白い！」と自分のアイデアを全力で肯定してくれる人', type: 'ICREATE' },
+      { text: '「つまりこういうことだよね」と話を整理してくれる人', type: 'IEXPRESS' },
+      { text: '「なんとかなるよ」と大きな視点で見せてくれる人', type: 'IUNDERSTAND' }
+    ]
+  },
+  {
+    category: '物事が動く時',
+    text: '人生でうまくいった時、\n振り返ると何をしていた？',
+    sub: '一番しっくりくるものを選んでください',
+    options: [
+      { text: '考えるより先に、とにかく動いていた', type: 'IAM' },
+      { text: '好きな場所・好きな人・心地よい環境の中にいた', type: 'IFEEL' },
+      { text: '「私がやる」と誰かに宣言していた・公言していた', type: 'ICREATE' },
+      { text: '「そういうことか！」と深く理解してから動き始めていた', type: 'ISEE' }
+    ]
+  },
+  {
+    category: '自由な一日',
+    text: '義務が何もない、完全に自由な一日。\n自然と何をしている？',
+    sub: '一番最初に浮かんだものを選んでください',
+    options: [
+      { text: '美味しいもの・好きな音楽・心地よい空間——五感を満たす時間', type: 'IFEEL' },
+      { text: '誰かと話す、書く、発信する——アウトプットしている', type: 'IEXPRESS' },
+      { text: '気になっていたことを深く調べる、一人で考える時間', type: 'ISEE' },
+      { text: '旅、新しい体験、枠を超えた何かを探している', type: 'IUNDERSTAND' }
+    ]
+  },
+  {
+    category: 'エネルギー回復',
+    text: 'なぜかエネルギーが戻ってきた時——\n何がありましたか？',
+    sub: '心当たりがあるものを選んでください',
+    options: [
+      { text: '信頼できる人に、話を聞いてもらえた', type: 'ILOVE' },
+      { text: '「これを伝えたい」という気持ちが湧いてきた', type: 'IEXPRESS' },
+      { text: '「もういいか」と肩の力が抜けた瞬間', type: 'IUNDERSTAND' },
+      { text: '「私がこれをやる意味がある」と確信した時', type: 'ICREATE' }
+    ]
+  },
+  {
+    category: '止まる理由',
+    text: '「なぜかいつもここで止まる」\nというパターンがあるとしたら？',
+    sub: '一番心当たりのあるものを選んでください',
+    options: [
+      { text: '誰かの期待に応えようとして、自分の気持ちを後回しにした', type: 'ILOVE' },
+      { text: '言いたいことを飲み込んで、自分の考えを表現しなかった', type: 'IEXPRESS' },
+      { text: '「現実的じゃない」と言われて、大きな夢を諦めた', type: 'IUNDERSTAND' },
+      { text: '自分を過小評価して、チャンスの前で引いてしまった', type: 'ICREATE' }
+    ]
+  },
+  {
+    category: '決断のスタイル',
+    text: '大きな決断をする時、\nあなたに一番近いのは？',
+    sub: '心当たりがあるものを選んでください',
+    options: [
+      { text: '誰かに相談せず、自分で即決する', type: 'IAM' },
+      { text: '信頼できる人に話してから、一緒に決める', type: 'ILOVE' },
+      { text: '「なんとかなる」と大きな流れに委ねる', type: 'IUNDERSTAND' },
+      { text: 'じっくり考えて、腑に落ちてから決める', type: 'ISEE' }
+    ]
+  }
+];
+
+// ============================================================
+// TYPE DATA
+// ============================================================
+const typeData = {
+  IAM: {
+    name: '開拓者型',
+    rpgName: 'THE PIONEER',
+    subtitle: '存在エンジン',
+    tagline: '「やると決めた瞬間」が、あなたの人生最大のスイッチです',
+    color: '#E85D3A',
+    bg: 'rgba(232,93,58,0.12)',
+    border: 'rgba(232,93,58,0.4)',
+    oneliner: '思考より先に体が動く。その瞬発力が、誰も開けなかった扉を開ける',
+    move: '「これは私がやる」と決めた瞬間。準備より先に、体が動き出している時',
+    stop: '「まだ早い」「もう少し準備してから」と動きを止められた時。他人の評価が気になって、一歩目が踏み出せなくなった時',
+    zone: '思考ゼロ、体が先に動いている。周りが「なぜそんなに動けるの？」と驚くスピードで、物事が次々と開いていく',
+    leak: '怒りが内側に溜まり始めたら要注意。エネルギーが「創造」ではなく「戦い」に向かっているサインです',
+    arcs: [
+      '「考えるより先に申し込んでいた」という体験が何度もある',
+      '準備が整う前に動いて、後から整えるスタイル',
+      '慎重な人を見ると「なぜそんなに考えるの？」と思う',
+      '「とりあえずやってみよう！」が口癖'
+    ],
+    chips: ['即行動', '開拓者', '自己決定', '先頭に立つ', '新しい挑戦']
+  },
+  IFEEL: {
+    name: '感覚者型',
+    rpgName: 'THE FEELER',
+    subtitle: '五感エンジン',
+    tagline: '「気持ちいい」と感じた瞬間から、あなたの現実が動き始めます',
+    color: '#C45C8A',
+    bg: 'rgba(196,92,138,0.12)',
+    border: 'rgba(196,92,138,0.4)',
+    oneliner: '五感が喜んでいる時、あなたは誰よりも豊かに、深く動ける',
+    move: '五感が満たされている時。好きな場所・好きな香り・心地よい空間の中にいる時',
+    stop: '「楽しむ前にやることがある」と義務感が先に立った時。自分の気持ちに蓋をして、人に合わせ続けた時',
+    zone: '感覚と感情が全開で、美しいものや好きなことに夢中になっている状態。「気づいたら何時間も経っていた」が頻繁に起きる',
+    leak: '嫉妬や執着が出てきたら要注意。「あの人はいいな」という感情が止まらなくなっているのは、自分の五感が枯渇しているサインです',
+    arcs: [
+      'お気に入りのカフェだと仕事が2倍速い',
+      '部屋が散らかっていると、何も考えられない',
+      '好きな音楽がかかった瞬間にやる気が出る',
+      '義務でやっていることは、なぜか結果が出ない'
+    ],
+    chips: ['五感', '感情豊か', '美的センス', 'クリエイティブ', '心地よさ優先']
+  },
+  ICREATE: {
+    name: '表現者型',
+    rpgName: 'THE CREATOR',
+    subtitle: '創造エンジン',
+    tagline: '「自分が主役だ」と決めた瞬間、圧倒的な引力が生まれます',
+    color: '#E8A020',
+    bg: 'rgba(232,160,32,0.12)',
+    border: 'rgba(232,160,32,0.4)',
+    oneliner: '自己宣言がエンジン。言葉にした瞬間、現実がそれを追いかけてくる',
+    move: '「私がこれをやる」という明確な宣言をした時。誰かに認められた、または自分で自分を認めた時',
+    stop: '「自分なんて大したことない」と思い始めた時。人の評価を気にして、本当にやりたいことを後回しにした時',
+    zone: '子供のように無邪気に自己表現を楽しんでいる状態。「これを作りたい・伝えたい」という衝動が止まらない',
+    leak: '「すごいと思われたい」が「作りたい」を超えてきたら要注意。見栄やプライドだけで動いている時、エンジンは空回りしています',
+    arcs: [
+      '誰かに話した途端にアイデアが膨らむ',
+      '褒められると10倍のパワーが出る',
+      '発表やプレゼンで、本番に強い',
+      '人に見せる仕事の方が圧倒的に速い'
+    ],
+    chips: ['自己表現', '宣言力', '主役', 'カリスマ', '創造する']
+  },
+  ILOVE: {
+    name: '愛着者型',
+    rpgName: 'THE NURTURER',
+    subtitle: '愛情エンジン',
+    tagline: '「ここは安全だ」と感じた瞬間、本当のあなたの力が出てきます',
+    color: '#4A9E8C',
+    bg: 'rgba(74,158,140,0.12)',
+    border: 'rgba(74,158,140,0.4)',
+    oneliner: '深い信頼関係の中でこそ、あなたは本当の力を発揮できる',
+    move: '信頼できる人間関係の中にいる時。「このメンバーのためなら」という深い絆と安心感がある時',
+    stop: '傷つくことを恐れて、心を閉じた時。「どうせわかってもらえない」という孤独感が出てきた時',
+    zone: '深い信頼関係の中で、惜しみなく与えている状態。「この人のためなら何でもできる」という感覚の中にいる',
+    leak: '「こんなにやっているのに」という感情が止まらなくなったら要注意。与えすぎて、自分のエンジンが空になっているサインです',
+    arcs: [
+      '初対面より、仲良くなってからの方が圧倒的に力が出る',
+      '信用できない人とは、どうしても本気になれない',
+      '家族や大切な人が喜ぶと思うと、不思議な力が出る',
+      'アットホームな環境だと、能力が2倍になる'
+    ],
+    chips: ['深い絆', '信頼関係', '愛情エンジン', '共感力', '安全な場所']
+  },
+  IEXPRESS: {
+    name: '伝達者型',
+    rpgName: 'THE MESSENGER',
+    subtitle: '知性エンジン',
+    tagline: '「これを伝えたい」という衝動が、あなたの最強のエンジンになります',
+    color: '#5B8FD4',
+    bg: 'rgba(91,143,212,0.12)',
+    border: 'rgba(91,143,212,0.4)',
+    oneliner: '話しながら考えが整理される。アウトプットそのものが、思考の燃料になっている',
+    move: '新しい情報に触れて「これは面白い」と感じた時。それを自分の言葉で誰かに伝えようとした瞬間',
+    stop: '情報を入れすぎて頭がパンクした時。「正しく伝えなければ」という完璧主義が出てきた時',
+    zone: 'フットワーク軽く情報を集め、ユーモアを交えながら人々とどんどん繋がっている状態。言葉が次々と出てくる',
+    leak: '複数のことを同時に抱えて、何一つ集中できなくなったら要注意。情報過多でエンジンがオーバーヒートしているサインです',
+    arcs: [
+      '話しながら、考えがまとまっていく',
+      '読んだ本をすぐ誰かに話したくなる',
+      '移動中や環境が変わった時にアイデアが降ってくる',
+      '黙って作業するより、誰かと話しながらの方が速い'
+    ],
+    chips: ['言語化', '伝達力', '知的好奇心', 'アウトプット', '情報収集']
+  },
+  ISEE: {
+    name: '設計者型',
+    rpgName: 'THE ARCHITECT',
+    subtitle: '具現化エンジン',
+    tagline: '「腑に落ちた瞬間」から、圧倒的な実行力があなたの中で生まれます',
+    color: '#8B6FD4',
+    bg: 'rgba(139,111,212,0.12)',
+    border: 'rgba(139,111,212,0.4)',
+    oneliner: '深く理解してから動く。その分、動き出した時は誰も追いつけない',
+    move: '「なぜそうなのか」が深く理解できた時。全体像が見えて、構造として整理できた瞬間',
+    stop: '完璧な答えが出るまで動けなくなった時。「まだ準備が足りない」のループに入った時',
+    zone: '長期的な視野で全体を設計しながら、コツコツと確実に積み上げている状態。気づいたら誰も追いつけない場所にいる',
+    leak: '自分や周りを厳しくジャッジし始めたら要注意。批判モードに入った時、エンジンのエネルギーは外ではなく内側に向かっています',
+    arcs: [
+      'なぜうまくいったか、理由がわかるまで次に進めない',
+      '理解が深まった瞬間に、急に全速力で動き出す',
+      '感覚で動く人を見ると「なぜそれで動けるの？」と思う',
+      '準備に時間をかけすぎて、スタートが遅れる'
+    ],
+    chips: ['構造化', '深い理解', '実務力', '腑に落ちる', 'コツコツ型']
+  },
+  IUNDERSTAND: {
+    name: '解放者型',
+    rpgName: 'THE VISIONARY',
+    subtitle: '宇宙エンジン',
+    tagline: '「手放した瞬間」に、予想を超えた現実が動き始めます',
+    color: '#3DA8B8',
+    bg: 'rgba(61,168,184,0.12)',
+    border: 'rgba(61,168,184,0.4)',
+    oneliner: '枠を超えた時だけ、あなたのエンジンは本当に火を吹く',
+    move: 'コントロールへの執着を手放した時。枠を超えたビジョンや理想が、ふと降りてきた時',
+    stop: '「こうでなければならない」という執着が強くなった時。流れを無理にコントロールしようとした時',
+    zone: '時間を忘れて大きなビジョンや探求に没頭している状態。「気づいたら世界が広がっていた」が頻繁に起きる',
+    leak: '「いつかやる」「準備ができたら」が口癖になったら要注意。ビジョンだけが膨らんで、現実から浮いてきているサインです',
+    arcs: [
+      '旅先や異文化に触れると、突然アイデアが降ってくる',
+      '「それって現実的なの？」とよく言われる',
+      '手放した瞬間に、なぜか物事が動き始めた体験が何度もある',
+      '細かいルールや手続きが、とにかく苦手'
+    ],
+    chips: ['手放す力', 'ビジョン', '自由', 'グローバル', '宇宙的視野']
+  }
+};
+
+// ============================================================
+// STATE
+// ============================================================
+let currentQ = 0;
+let answers = [];
+let scores = { IAM:0, IFEEL:0, ICREATE:0, ILOVE:0, IEXPRESS:0, ISEE:0, IUNDERSTAND:0 };
+
+// ============================================================
+// FUNCTIONS
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function startDiagnosis() {
+  currentQ = 0;
+  answers = [];
+  scores = { IAM:0, IFEEL:0, ICREATE:0, ILOVE:0, IEXPRESS:0, ISEE:0, IUNDERSTAND:0 };
+  showScreen('screen-diagnosis');
+  renderQ(0);
+}
+
+function renderQ(idx) {
+  const q = questions[idx];
+  const fill = document.getElementById('progress-fill');
+  const label = document.getElementById('progress-label');
+  const back = document.getElementById('btn-back');
+  const next = document.getElementById('btn-next');
+
+  fill.style.width = (idx / questions.length * 100) + '%';
+  label.textContent = (idx + 1) + ' / 8';
+  back.style.display = idx > 0 ? 'block' : 'none';
+  next.disabled = answers[idx] === undefined;
+  next.textContent = idx === questions.length - 1 ? '結果を見る ✦' : '次へ →';
+
+  const selected = answers[idx];
+  document.getElementById('question-area').innerHTML = `
+    <div class="q-category">${q.category}</div>
+    <div class="q-text">${q.text}</div>
+    <div class="q-sub">${q.sub}</div>
+    <div class="options">
+      ${q.options.map((o, i) => `
+        <button class="option-btn ${selected === i ? 'selected' : ''}"
+          onclick="selectOpt(${i})">${o.text}</button>
+      `).join('')}
+    </div>
+  `;
+}
+
+function selectOpt(idx) {
+  answers[currentQ] = idx;
+  document.querySelectorAll('.option-btn').forEach((b, i) => {
+    b.classList.toggle('selected', i === idx);
+  });
+  document.getElementById('btn-next').disabled = false;
+}
+
+function nextQ() {
+  if (answers[currentQ] === undefined) return;
+  if (currentQ < questions.length - 1) {
+    currentQ++;
+    renderQ(currentQ);
+  } else {
+    showResult();
+  }
+}
+
+function prevQ() {
+  if (currentQ > 0) { currentQ--; renderQ(currentQ); }
+}
+
+function showResult() {
+  // スコア集計
+  Object.keys(scores).forEach(k => scores[k] = 0);
+  answers.forEach((ansIdx, qIdx) => {
+    const type = questions[qIdx].options[ansIdx].type;
+    scores[type] = (scores[type] || 0) + 1;
+  });
+
+  // 最高スコアのタイプを取得
+  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  const topType = sorted[0][0];
+  const t = typeData[topType];
+
+  // メーター用パーセント（7問中のスコア）
+  const meterData = sorted.map(([type, score]) => ({
+    type, score,
+    pct: Math.round(score / 7 * 100),
+    data: typeData[type]
+  }));
+
+  showScreen('screen-result');
+
+  document.getElementById('result-content').innerHTML = `
+    <div class="result-header">
+      <div class="result-eyebrow">Your Engine Type</div>
+      <div class="result-type-badge" style="color:${t.color};border:1px solid ${t.border};background:${t.bg};">
+        ${t.rpgName} — ${t.subtitle}
+      </div>
+      <div class="result-name" style="color:${t.color};">
+        ${t.name}<em> Engine</em>
+      </div>
+      <p class="result-tagline">${t.tagline}</p>
+    </div>
+
+    <!-- メーター -->
+    <div class="meter-card">
+      <div class="meter-title">Engine Type Analysis</div>
+      ${meterData.map(m => `
+        <div class="meter-row">
+          <div class="meter-name" style="color:${m.data.color};font-size:10px;">${m.data.name}</div>
+          <div class="meter-bar-bg">
+            <div class="meter-bar-inner" style="background:${m.data.color};width:0%" data-pct="${m.pct}"></div>
+          </div>
+          <div class="meter-val" style="color:${m.data.color};">${m.pct}%</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <!-- ① あるある -->
+    <div class="result-card" style="border-color:${t.border}">
+      <div style="position:absolute;left:0;top:0;bottom:0;width:2px;background:${t.color}"></div>
+      <div class="card-label" style="color:${t.color};">◆ あなたのあるある</div>
+      <h3>「これ、私かも」と感じるもの</h3>
+      <ul class="soul-list">
+        ${t.arcs.map(a => `
+          <li><span class="soul-bullet" style="color:${t.color};">◆</span>${a}</li>
+        `).join('')}
+      </ul>
+    </div>
+
+    <!-- ② エンジンの正体 -->
+    <div class="result-card" style="border-color:${t.border}">
+      <div style="position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,${t.color},${t.border})"></div>
+      <div class="card-label" style="color:${t.color};">◆ あなたのエンジンの正体</div>
+      <h3>${t.oneliner}</h3>
+      <p>人生がうまくいった時、あなたは必ず<strong style="color:${t.color};font-weight:400;">「${t.move.split('。')[0]}」</strong>という状態にいました。これがあなたの人生エンジンが起動する条件です。</p>
+    </div>
+
+    <!-- ③ 動く・止まる -->
+    <div class="grid-2">
+      <div class="result-card" style="border-color:${t.border}">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:2px;background:${t.color}"></div>
+        <div class="card-label" style="color:${t.color};">◆ 動く条件</div>
+        <p>${t.move}</p>
+      </div>
+      <div class="result-card" style="border-color:rgba(196,92,138,0.25)">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,#8B2055,#C45C8A)"></div>
+        <div class="card-label" style="color:#C45C8A;">◆ 止まる条件</div>
+        <p>${t.stop}</p>
+      </div>
+    </div>
+
+    <!-- ④ ゾーン状態 -->
+    <div class="result-card" style="border-color:${t.border}">
+      <div style="position:absolute;left:0;top:0;bottom:0;width:2px;background:${t.color}"></div>
+      <div class="card-label" style="color:${t.color};">◆ 何かが噛み合った、あの感覚</div>
+      <h3>自分の中で何かが噛み合った、あの感覚</h3>
+      <p>${t.zone}</p>
+    </div>
+
+    <!-- ⑤ 空回りサイン -->
+    <div class="result-card" style="border-color:rgba(196,92,138,0.2)">
+      <div style="position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,#8B2055,#C45C8A)"></div>
+      <div class="card-label" style="color:#C45C8A;">◆ 空回りサイン</div>
+      <h3>こうなったら、エンジンが詰まっているサイン</h3>
+      <p>${t.leak}</p>
+    </div>
+
+    <!-- ⑥ キーワード -->
+    <div class="result-card" style="border-color:${t.border}">
+      <div style="position:absolute;left:0;top:0;bottom:0;width:2px;background:${t.color}"></div>
+      <div class="card-label" style="color:${t.color};">◆ あなたのエンジンキーワード</div>
+      <div class="chip-row">
+        ${t.chips.map(c => `<span class="chip" style="border-color:${t.border};color:${t.color};">${c}</span>`).join('')}
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-section">
+      <div class="cta-title">
+        これは<em>「今の」あなたの動き方</em>です。
+      </div>
+      <p class="cta-sub">
+        本来持っているエンジンと一致していますか？<br>
+        生年月日から「本来のエンジン」を確認してみてください。
+      </p>
+      <a href="lunara-origin-engine.html" class="btn-line">
+        ✦ 本来のエンジンを確認する
+      </a>
+      <div style="margin:20px 0;border-top:1px solid rgba(201,168,76,0.1);"></div>
+      <p class="cta-sub">
+        2つの診断結果を元に、<br>
+        さらに深く一緒に探しませんか？
+      </p>
+      <a href="https://lin.ee/qoNCvEH" target="_blank" class="btn-line" style="background:transparent;border-color:rgba(201,168,76,0.3);color:var(--text-mid);">
+        LunaRa Lab . Hideka に相談する
+      </a>
+      <p class="cta-note">公式LINEよりお問い合わせください</p>
+    </div>
+
+    <div style="text-align:center;padding:24px 0 0;">
+      <button class="restart-btn" onclick="restartApp()">← もう一度診断する</button>
+    </div>
+  `;
+
+  // メーターアニメーション
+  setTimeout(() => {
+    document.querySelectorAll('.meter-bar-inner').forEach(el => {
+      el.style.width = el.dataset.pct + '%';
+    });
+  }, 300);
+}
+
+function restartApp() {
+  currentQ = 0;
+  answers = [];
+  showScreen('screen-cover');
+}
+</script>
+</body>
+</html>
