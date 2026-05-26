@@ -193,11 +193,11 @@ body {
   align-items: flex-start;
   gap: 12px;
   cursor: pointer;
-  padding: 12px 16px;
+  padding: 14px 16px;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 4px;
-  transition: border-color 0.3s;
+  transition: all 0.2s;
 }
 
 .radio-item:hover,
@@ -207,11 +207,18 @@ body {
 
 .radio-item input,
 .check-item input {
-  width: 16px;
-  height: 16px;
-  margin-top: 2px;
-  flex-shrink: 0;
-  accent-color: var(--gold);
+  display: none;
+}
+
+.radio-item:has(input:checked),
+.check-item:has(input:checked) {
+  border-color: var(--gold);
+  background: rgba(201,168,76,0.08);
+}
+
+.radio-item:has(input:checked) .radio-item-title,
+.check-item:has(input:checked) .check-item-title {
+  color: var(--gold-light);
 }
 
 .radio-item-text,
