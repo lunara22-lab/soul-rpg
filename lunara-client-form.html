@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>エンジン解析 入力フォーム | LunaRa Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Noto+Serif+JP:wght@200;300;400&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #C9A84C;
+  --gold-light: #E8C97A;
+  --deep: #080608;
+  --mid: #1E1518;
+  --card: #140E12;
+  --text-bright: #F5EDE0;
+  --text-mid: #C8B09A;
+  --text-dim: #7A6A60;
+  --magenta: #8B2055;
+  --magenta-light: #C45C8A;
+  --teal: #1E6B7A;
+  --teal-light: #3DA8B8;
+  --border: rgba(201,168,76,0.15);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--deep);
+  color: var(--text-bright);
+  font-family: 'Noto Serif JP', serif;
+  font-weight: 300;
+  min-height: 100vh;
+}
+
+.cosmos {
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 20% 10%, rgba(201,168,76,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 60% at 80% 80%, rgba(139,32,85,0.05) 0%, transparent 55%),
+    linear-gradient(160deg, #080608 0%, #12080E 40%, #080A12 100%);
+  pointer-events: none;
+}
+
+.wrap {
+  position: relative; z-index: 1;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 60px 24px 80px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.header-badge {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: 0.35em;
+  color: var(--gold);
+  margin-bottom: 20px;
+}
+
+.header-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(26px, 5vw, 36px);
+  font-weight: 300;
+  color: var(--text-bright);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.header-title em {
+  font-style: italic;
+  color: var(--gold-light);
+}
+
+.header-desc {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 2;
+  letter-spacing: 0.05em;
+}
+
+.divider {
+  width: 40px;
+  height: 1px;
+  background: var(--gold);
+  margin: 24px auto;
+  opacity: 0.4;
+}
+
+/* セクション */
+.section {
+  margin-bottom: 32px;
+}
+
+.section-label {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  color: var(--gold);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* 入力フィールド */
+.field {
+  margin-bottom: 20px;
+}
+
+.field-label {
+  font-size: 12px;
+  color: var(--text-mid);
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.field-label span {
+  color: var(--magenta-light);
+  margin-left: 4px;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 14px 16px;
+  color: var(--text-bright);
+  font-family: 'Noto Serif JP', serif;
+  font-size: 14px;
+  font-weight: 300;
+  outline: none;
+  transition: border-color 0.3s;
+  -webkit-appearance: none;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: rgba(201,168,76,0.4);
+}
+
+.field input::placeholder,
+.field textarea::placeholder {
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.field select option {
+  background: var(--mid);
+  color: var(--text-bright);
+}
+
+.field textarea {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.8;
+}
+
+/* 2カラム */
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ラジオ・チェック */
+.radio-group,
+.check-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.radio-item,
+.check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  padding: 12px 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  transition: border-color 0.3s;
+}
+
+.radio-item:hover,
+.check-item:hover {
+  border-color: rgba(201,168,76,0.3);
+}
+
+.radio-item input,
+.check-item input {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  accent-color: var(--gold);
+}
+
+.radio-item-text,
+.check-item-text {
+  flex: 1;
+}
+
+.radio-item-title,
+.check-item-title {
+  font-size: 13px;
+  color: var(--text-bright);
+  letter-spacing: 0.05em;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.radio-item-desc,
+.check-item-desc {
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+/* 送信ボタン */
+.submit-btn {
+  width: 100%;
+  padding: 18px;
+  background: linear-gradient(135deg, rgba(201,168,76,0.2), rgba(201,168,76,0.1));
+  border: 1px solid rgba(201,168,76,0.4);
+  border-radius: 4px;
+  color: var(--gold-light);
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 40px;
+}
+
+.submit-btn:hover {
+  background: linear-gradient(135deg, rgba(201,168,76,0.3), rgba(201,168,76,0.15));
+  border-color: rgba(201,168,76,0.6);
+}
+
+/* 完了画面 */
+.complete-screen {
+  display: none;
+  text-align: center;
+  padding: 80px 0;
+}
+
+.complete-screen.active { display: block; }
+
+.complete-icon {
+  font-size: 40px;
+  margin-bottom: 24px;
+  opacity: 0.8;
+}
+
+.complete-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--gold-light);
+  margin-bottom: 16px;
+}
+
+.complete-text {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 2.2;
+}
+
+.note {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 8px;
+  line-height: 1.8;
+}
+</style>
+</head>
+<body>
+<div class="cosmos"></div>
+
+<div class="wrap">
+  <div id="form-screen">
+    <div class="header">
+      <div class="header-badge">LUNARA LAB × SOUL RPG</div>
+      <h1 class="header-title">
+        あなただけの<br><em>エンジン解析</em>へ
+      </h1>
+      <div class="divider"></div>
+      <p class="header-desc">
+        以下の情報を入力してください。<br>
+        Hidekaが個別に解析し、<br>
+        あなた専用のエンジンレポートを作成します。
+      </p>
+    </div>
+
+    <!-- 基本情報 -->
+    <div class="section">
+      <div class="section-label">基本情報</div>
+
+      <div class="field">
+        <label class="field-label">お名前（ローマ字フルネーム）<span>*</span></label>
+        <input type="text" id="name" placeholder="例：LunaRa Lab." required>
+      </div>
+
+      <div class="field">
+        <label class="field-label">LINEの表示名<span>*</span></label>
+        <input type="text" id="line-name" placeholder="例：Hideka" required>
+        <p class="note">※ 今のLINEに表示されている名前をそのまま入力してください</p>
+      </div>
+
+      <div class="field">
+        <label class="field-label">生年月日<span>*</span></label>
+        <div class="field-row">
+          <input type="number" id="year" placeholder="例：1990" min="1940" max="2010">
+          <input type="number" id="month" placeholder="月（例：3）" min="1" max="12">
+        </div>
+        <div style="margin-top:12px;">
+          <input type="number" id="day" placeholder="日（例：15）" min="1" max="31">
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">生まれた時間<span style="color:var(--text-dim);margin-left:4px;">任意・わかる方のみ</span></label>
+        <input type="text" id="birth-time" placeholder="例：10:00">
+        <p class="note">※ わからない場合は空欄で大丈夫です</p>
+      </div>
+
+      <div class="field">
+        <label class="field-label">生まれた場所<span style="color:var(--text-dim);margin-left:4px;">任意・わかる方のみ</span></label>
+        <input type="text" id="birth-place" placeholder="例：島根県出雲市">
+        <p class="note">※ わからない場合は空欄で大丈夫です</p>
+      </div>
+    </div>
+
+    <!-- 診断結果 -->
+    <div class="section">
+      <div class="section-label">診断結果</div>
+
+      <div class="field">
+        <label class="field-label">今の動き方（エンジン）<span>*</span></label>
+        <select id="engine-type">
+          <option value="" disabled selected>選んでください</option>
+          <option value="IAM">開拓者型 — 存在エンジン</option>
+          <option value="IFEEL">感覚者型 — 五感エンジン</option>
+          <option value="ICREATE">表現者型 — 創造エンジン</option>
+          <option value="ILOVE">愛着者型 — 愛情エンジン</option>
+          <option value="IEXPRESS">伝達者型 — 知性エンジン</option>
+          <option value="ISEE">設計者型 — 具現化エンジン</option>
+          <option value="IUNDERSTAND">解放者型 — 宇宙エンジン</option>
+          <option value="unknown">まだ受けていない</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="field-label">本来のエンジン<span>*</span></label>
+        <select id="origin-type">
+          <option value="" disabled selected>選んでください</option>
+          <option value="IAM">開拓者型 — 存在エンジン</option>
+          <option value="IFEEL">感覚者型 — 五感エンジン</option>
+          <option value="ICREATE">表現者型 — 創造エンジン</option>
+          <option value="ILOVE">愛着者型 — 愛情エンジン</option>
+          <option value="IEXPRESS">伝達者型 — 知性エンジン</option>
+          <option value="ISEE">設計者型 — 具現化エンジン</option>
+          <option value="IUNDERSTAND">解放者型 — 宇宙エンジン</option>
+          <option value="unknown">まだ受けていない</option>
+        </select>
+        <p class="note">※ 本来のエンジン診断を受けていない方は、後でご案内します</p>
+      </div>
+    </div>
+
+    <!-- 追加質問 -->
+    <div class="section">
+      <div class="section-label">あなたのことを教えてください</div>
+
+      <div class="field">
+        <label class="field-label">最近「自分の中で何かが噛み合った」という体験はありましたか？<span>*</span></label>
+        <textarea id="zone-exp" placeholder="どんな小さなことでも。「あの日はなぜか全部うまくいった」という体験を教えてください。"></textarea>
+      </div>
+
+      <div class="field">
+        <label class="field-label">今一番「空回りしている」と感じることは何ですか？</label>
+        <textarea id="empty-exp" placeholder="仕事・人間関係・自分自身のこと、何でも。"></textarea>
+      </div>
+
+      <div class="field">
+        <label class="field-label">今の自分に一番しっくりくるのはどれですか？<span>*</span></label>
+        <div class="radio-group">
+          <label class="radio-item">
+            <input type="radio" name="current-state" value="cheat">
+            <div class="radio-item-text">
+              <span class="radio-item-title">✦ 噛み合っている状態</span>
+              <span class="radio-item-desc">最近、物事がうまく動いている感覚がある</span>
+            </div>
+          </label>
+          <label class="radio-item">
+            <input type="radio" name="current-state" value="rising">
+            <div class="radio-item-text">
+              <span class="radio-item-title">◎ 上昇中の状態</span>
+              <span class="radio-item-desc">少しずつ動き始めている感覚がある</span>
+            </div>
+          </label>
+          <label class="radio-item">
+            <input type="radio" name="current-state" value="blocked">
+            <div class="radio-item-text">
+              <span class="radio-item-title">○ 詰まっている状態</span>
+              <span class="radio-item-desc">頑張っているのに空回りしている感覚がある</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">レポートで一番知りたいことは何ですか？（複数選択可）<span>*</span></label>
+        <div class="check-group">
+          <label class="check-item">
+            <input type="checkbox" value="動く条件">
+            <div class="check-item-text">
+              <span class="check-item-title">自分が動く条件</span>
+            </div>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" value="止まる条件">
+            <div class="check-item-text">
+              <span class="check-item-title">空回りする条件・止まる理由</span>
+            </div>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" value="ズレの理由">
+            <div class="check-item-text">
+              <span class="check-item-title">今の動き方と本来のエンジンのズレ</span>
+            </div>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" value="あの感覚の条件">
+            <div class="check-item-text">
+              <span class="check-item-title">「何かが噛み合った」あの感覚の条件</span>
+            </div>
+          </label>
+          <label class="check-item">
+            <input type="checkbox" value="戻るヒント">
+            <div class="check-item-text">
+              <span class="check-item-title">本来のエンジンに戻るための具体的なヒント</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">その他、伝えたいことがあれば自由に</label>
+        <textarea id="free-text" placeholder="何でも。" style="min-height:80px;"></textarea>
+      </div>
+    </div>
+
+    <button class="submit-btn" onclick="submitForm()">✦ 送信する</button>
+  </div>
+
+  <!-- 完了画面 -->
+  <div class="complete-screen" id="complete-screen">
+    <div class="complete-icon">✦</div>
+    <div class="complete-title">送信完了しました</div>
+    <p class="complete-text">
+      ご入力ありがとうございます。<br><br>
+      Hidekaが内容を確認し、<br>
+      あなた専用のエンジンレポートを<br>
+      作成いたします。<br><br>
+      LINEにてご連絡しますので、<br>
+      しばらくお待ちください。
+    </p>
+  </div>
+</div>
+
+<script>
+function submitForm() {
+  var name = document.getElementById('name').value;
+  var lineName = document.getElementById('line-name').value;
+  var year = document.getElementById('year').value;
+  var month = document.getElementById('month').value;
+  var day = document.getElementById('day').value;
+  var engineType = document.getElementById('engine-type').value;
+  var originType = document.getElementById('origin-type').value;
+  var zoneExp = document.getElementById('zone-exp').value;
+
+  var state = document.querySelector('input[name="current-state"]:checked');
+  var checks = document.querySelectorAll('input[type="checkbox"]:checked');
+  var wants = Array.from(checks).map(function(c){ return c.value; }).join('・');
+
+  if (!name || !lineName || !year || !month || !day || !engineType || !originType || !zoneExp || !state || wants === '') {
+    alert('必須項目（*）を入力してください');
+    return;
+  }
+
+  var freeText = document.getElementById('free-text').value;
+
+  var formBaseUrl = 'https://docs.google.com/forms/d/e/1FAIpQLScHSs1csv18GCdw7ir_PCueRCnVX58iImBEbyc17zbvNVHxFw/formResponse';
+
+  var params = new URLSearchParams({
+    'entry.71656586': name,
+    'entry.1934041180': lineName,
+    'entry.1272846442': year,
+    'entry.713117658': month,
+    'entry.1322744321': day,
+    'entry.244790361': document.getElementById('birth-time').value || '',
+    'entry.1113584207': document.getElementById('birth-place').value || '',
+    'entry.934278537': engineType,
+    'entry.1212680163': originType,
+    'entry.1997487789': zoneExp,
+    'entry.1948789696': document.getElementById('empty-exp').value || '',
+    'entry.632841524': state ? state.value : '',
+    'entry.23424266': wants,
+    'entry.1093816979': freeText
+  });
+
+  var img = new Image();
+  img.src = formBaseUrl + '?' + params.toString();
+
+  document.getElementById('form-screen').style.display = 'none';
+  document.getElementById('complete-screen').classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
