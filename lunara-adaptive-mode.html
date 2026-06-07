@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>現在の適応モード観察 | LunaRa Lab</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Noto+Serif+JP:wght@200;300;400&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #C9A84C;
+  --gold-light: #E8C97A;
+  --deep: #080608;
+  --dark: #120D10;
+  --mid: #1E1518;
+  --text-bright: #F5EDE0;
+  --text-mid: #C8B09A;
+  --text-dim: #7A6A60;
+  --magenta: #C45C8A;
+  --teal: #3DA8B8;
+
+  /* モードカラー */
+  --m1: #C45C8A;
+  --m2: #E8A020;
+  --m3: #8B6FD4;
+  --m4: #5B8FD4;
+  --m5: #4A9E8C;
+  --m6: #B8845A;
+  --m7: #3DA8B8;
+  --m8: #C9A84C;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--deep);
+  color: var(--text-bright);
+  font-family: 'Noto Serif JP', serif;
+  font-weight: 300;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.cosmos {
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 20% 10%, rgba(196,92,138,0.07) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 60% at 80% 80%, rgba(201,168,76,0.05) 0%, transparent 55%),
+    linear-gradient(160deg, #080608 0%, #12080E 40%, #080A12 100%);
+  pointer-events: none;
+}
+
+.cosmos::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 15% 20%, rgba(196,92,138,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 40% 8%, rgba(240,210,200,0.3) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 65% 25%, rgba(201,168,76,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 80% 15%, rgba(240,210,200,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 25% 65%, rgba(196,92,138,0.3) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 70% 70%, rgba(201,168,76,0.3) 0%, transparent 100%);
+  animation: starPulse 8s ease-in-out infinite alternate;
+}
+
+@keyframes starPulse { 0%{opacity:.5} 100%{opacity:1} }
+
+.page {
+  position: relative; z-index: 1;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 20px 80px;
+}
+
+.screen { display: none; }
+.screen.active { display: block; animation: fadeUp 0.7s ease forwards; }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(20px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+@keyframes questionIn {
+  from { opacity:0; transform:translateX(16px); }
+  to { opacity:1; transform:translateX(0); }
+}
+
+.question-animate {
+  animation: questionIn 0.4s ease forwards;
+}
+
+#question-area {
+  transition: opacity 0.25s ease;
+}
+
+/* COVER */
+.cover {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; padding: 60px 0;
+}
+
+.cover-badge {
+  font-family: 'Cinzel', serif;
+  font-size: 10px; letter-spacing: 0.4em;
+  color: var(--gold); opacity: 0.8;
+  margin-bottom: 32px;
+}
+
+.cover-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(28px, 7vw, 48px);
+  font-weight: 300; line-height: 1.25;
+  margin-bottom: 8px;
+}
+
+.cover-title em { font-style: italic; color: var(--gold-light); display: block; }
+
+.cover-line {
+  display: flex; align-items: center; gap: 16px;
+  width: 100%; max-width: 300px;
+  margin: 24px auto 32px;
+}
+.cover-line::before, .cover-line::after {
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(196,92,138,0.4), transparent);
+}
+.cover-line span { color: var(--magenta); font-size: 12px; }
+
+.cover-desc {
+  font-size: 14px; color: var(--text-mid);
+  line-height: 2.2; max-width: 420px;
+  margin: 0 auto 40px;
+}
+
+.cover-desc strong { color: var(--gold-light); font-weight: 400; }
+
+.btn-start {
+  display: inline-block;
+  background: linear-gradient(135deg, rgba(196,92,138,0.15), rgba(196,92,138,0.05));
+  border: 1px solid rgba(196,92,138,0.4);
+  color: #E8A8C8;
+  font-family: 'Noto Serif JP', serif;
+  font-size: 14px; letter-spacing: 0.15em;
+  padding: 18px 48px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-start:hover {
+  border-color: var(--magenta);
+  box-shadow: 0 0 30px rgba(196,92,138,0.12);
+  transform: translateY(-2px);
+}
+
+/* PROGRESS */
+.progress-wrap {
+  padding: 48px 0 32px;
+  display: flex; align-items: center; gap: 14px;
+}
+
+.progress-bar {
+  flex: 1; height: 2px;
+  background: rgba(196,92,138,0.1);
+  border-radius: 1px; overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--magenta), #E8A8C8);
+  transition: width 0.5s ease;
+}
+
+.progress-label {
+  font-family: 'Cinzel', serif;
+  font-size: 10px; letter-spacing: 0.2em;
+  color: var(--text-dim); white-space: nowrap;
+}
+
+/* QUESTION */
+.q-category {
+  font-family: 'Cinzel', serif;
+  font-size: 9px; letter-spacing: 0.3em;
+  color: var(--magenta); opacity: 0.8;
+  text-transform: uppercase; margin-bottom: 14px;
+}
+
+.q-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(20px, 4.5vw, 28px);
+  font-weight: 300; line-height: 1.6;
+  color: var(--text-bright); margin-bottom: 8px;
+}
+
+.q-sub {
+  font-size: 13px; color: var(--text-mid);
+  line-height: 1.9; margin-bottom: 36px;
+  padding: 12px 16px;
+  border-left: 1px solid rgba(196,92,138,0.3);
+  background: rgba(196,92,138,0.04);
+}
+
+.options { display: flex; flex-direction: column; gap: 10px; }
+
+.option-btn {
+  background: rgba(30,21,24,0.7);
+  border: 1px solid rgba(196,92,138,0.1);
+  border-radius: 2px;
+  padding: 16px 20px;
+  cursor: pointer; text-align: left;
+  color: var(--text-mid);
+  font-family: 'Noto Serif JP', serif;
+  font-size: 13px; letter-spacing: 0.05em;
+  line-height: 1.7;
+  transition: all 0.25s;
+  width: 100%;
+}
+
+.option-btn:hover {
+  border-color: rgba(196,92,138,0.35);
+  background: rgba(196,92,138,0.07);
+  color: var(--text-bright);
+}
+
+.option-btn.selected {
+  border-color: rgba(196,92,138,0.6);
+  background: rgba(196,92,138,0.12);
+  color: var(--text-bright);
+}
+
+/* RESULT */
+.result-header {
+  padding: 60px 0 32px;
+  text-align: center;
+}
+
+.result-eyebrow {
+  font-family: 'Cinzel', serif;
+  font-size: 9px; letter-spacing: 0.4em;
+  color: var(--text-dim); margin-bottom: 20px;
+}
+
+.result-mode-badge {
+  display: inline-block;
+  padding: 8px 20px;
+  border: 1px solid;
+  font-family: 'Cinzel', serif;
+  font-size: 10px; letter-spacing: 0.3em;
+  margin-bottom: 24px;
+}
+
+.result-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(32px, 8vw, 52px);
+  font-weight: 300; line-height: 1.2;
+  margin-bottom: 8px;
+}
+
+.result-title em { font-style: italic; }
+
+.result-oneliner {
+  font-size: 14px; color: var(--text-mid);
+  line-height: 2; max-width: 460px;
+  margin: 0 auto 48px;
+}
+
+/* METER */
+.meter-section {
+  background: rgba(18,13,16,0.8);
+  border: 1px solid rgba(196,92,138,0.1);
+  padding: 28px 24px; margin-bottom: 32px;
+}
+
+.meter-label {
+  font-family: 'Cinzel', serif;
+  font-size: 9px; letter-spacing: 0.35em;
+  color: var(--text-dim); margin-bottom: 24px;
+  text-align: center;
+}
+
+.meter-row {
+  display: flex; align-items: center;
+  gap: 14px; margin-bottom: 16px;
+}
+
+.meter-name {
+  font-size: 12px; color: var(--text-mid);
+  width: 80px; flex-shrink: 0; text-align: right;
+  line-height: 1.4;
+}
+
+.meter-bar {
+  flex: 1; height: 6px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 3px; overflow: hidden;
+}
+
+.meter-bar-inner {
+  height: 100%; border-radius: 3px;
+  transition: width 1.2s ease;
+}
+
+/* CARDS */
+.result-card {
+  border-left: 2px solid;
+  padding: 20px 0 20px 24px;
+  margin-bottom: 24px;
+}
+
+.result-card-label {
+  font-family: 'Cinzel', serif;
+  font-size: 9px; letter-spacing: 0.35em;
+  margin-bottom: 10px;
+}
+
+.result-card-body {
+  font-size: 14px; color: var(--text-mid);
+  line-height: 2.2;
+}
+
+.result-card-body li {
+  list-style: none;
+  padding-left: 16px;
+  position: relative;
+  margin-bottom: 6px;
+}
+
+.result-card-body li::before {
+  content: '◆';
+  position: absolute; left: 0;
+  font-size: 7px; top: 6px;
+}
+
+/* OBSERVATION WORK */
+.obs-work {
+  background: rgba(196,92,138,0.04);
+  border: 1px solid rgba(196,92,138,0.12);
+  padding: 28px 24px; margin-bottom: 24px;
+}
+
+.obs-title {
+  font-family: 'Cinzel', serif;
+  font-size: 9px; letter-spacing: 0.35em;
+  color: var(--magenta); margin-bottom: 16px;
+}
+
+.obs-body {
+  font-size: 14px; color: var(--text-mid);
+  line-height: 2.4;
+}
+
+.obs-body em {
+  color: var(--gold-light);
+  font-style: normal;
+}
+
+/* TODAY STEP */
+.today-step {
+  background: rgba(201,168,76,0.04);
+  border: 1px solid rgba(201,168,76,0.1);
+  padding: 28px 24px; margin-bottom: 24px;
+}
+
+.today-step-label {
+  font-family: 'Cinzel', serif;
+  font-size: 9px; letter-spacing: 0.35em;
+  color: var(--gold); margin-bottom: 14px;
+}
+
+.today-step-body {
+  font-size: 14px; color: var(--text-mid);
+  line-height: 2.4;
+}
+
+/* BODY SIGNAL */
+.body-signal {
+  padding: 20px 0 20px 20px;
+  border-left: 1px solid rgba(201,168,76,0.2);
+  margin-bottom: 24px;
+}
+
+.body-signal-label {
+  font-family: 'Cinzel', serif;
+  font-size: 9px; letter-spacing: 0.35em;
+  color: var(--text-dim); margin-bottom: 10px;
+}
+
+.body-signal-body {
+  font-size: 13px; color: var(--text-dim);
+  line-height: 2.2; font-style: italic;
+}
+
+/* WARNING */
+.warning-text {
+  font-size: 12px; color: var(--text-dim);
+  line-height: 2; text-align: center;
+  padding: 20px 0;
+  border-top: 1px solid rgba(255,255,255,0.04);
+  margin-bottom: 32px;
+}
+
+/* CTA */
+.cta-section {
+  padding: 32px 0 0;
+  text-align: center;
+}
+
+.cta-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px; font-weight: 300;
+  line-height: 1.6; margin-bottom: 12px;
+}
+
+.cta-title em { font-style: italic; color: var(--gold-light); }
+
+.cta-sub {
+  font-size: 13px; color: var(--text-dim);
+  line-height: 2; margin-bottom: 20px;
+}
+
+.btn-line {
+  display: block;
+  border: 1px solid rgba(201,168,76,0.35);
+  color: var(--text-mid);
+  font-family: 'Noto Serif JP', serif;
+  font-size: 13px; letter-spacing: 0.1em;
+  padding: 16px 28px;
+  text-decoration: none;
+  transition: all 0.3s;
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.btn-line:hover {
+  border-color: rgba(201,168,76,0.6);
+  color: var(--gold-light);
+}
+
+.btn-line.primary {
+  background: linear-gradient(135deg, rgba(196,92,138,0.15), rgba(196,92,138,0.05));
+  border-color: rgba(196,92,138,0.4);
+  color: #E8A8C8;
+}
+
+.btn-line.primary:hover {
+  border-color: var(--magenta);
+  color: #F0C0D8;
+}
+
+.cta-note {
+  font-size: 11px; color: var(--text-dim);
+  letter-spacing: 0.08em; margin-top: 16px;
+}
+
+.restart-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-family: 'Noto Serif JP', serif;
+  font-size: 12px; letter-spacing: 0.1em;
+  cursor: pointer; padding: 8px;
+  transition: color 0.3s;
+  margin-top: 12px;
+}
+
+.restart-btn:hover { color: var(--text-mid); }
+
+/* DIVIDER */
+.divider {
+  height: 1px; margin: 32px 0;
+  background: linear-gradient(90deg, transparent, rgba(196,92,138,0.15), transparent);
+}
+</style>
+</head>
+<body>
+
+<div class="cosmos"></div>
+
+<div class="page">
+
+  <!-- COVER -->
+  <div id="screen-cover" class="screen active">
+    <div class="cover">
+      <div class="cover-badge">LunaRa Lab · 感覚観察</div>
+      <div class="cover-title">
+        今、どんな防御で<em>動いていますか。</em>
+      </div>
+      <div class="cover-line"><span>◆</span></div>
+      <p class="cover-desc">
+        この診断は、タイプを当てるための<br>ものではありません。<br><br>
+        <strong>今、どんな適応モードで動いているか</strong>を<br>
+        身体と行動から、静かに観察するための地図です。<br><br>
+        正しく答えなくて大丈夫です。<br>
+        「なんとなく近い」で選んでみてください。<br><br>
+        途中で胸や呼吸に変化があったら、<br>
+        それも一つの答えかもしれません。
+      </p>
+      <button class="btn-start" onclick="startDiagnosis()">✦ 観察をはじめる</button>
+    </div>
+  </div>
+
+  <!-- QUESTIONS -->
+  <div id="screen-questions" class="screen">
+    <div class="progress-wrap">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+      <div class="progress-label" id="progress-label">1 / 13</div>
+    </div>
+    <div id="question-area"></div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="screen-result" class="screen">
+    <div id="result-area"></div>
+  </div>
+
+</div>
+
+<script>
+// ===== 適応モードデータ =====
+const modes = {
+  OVER_ADAPT: {
+    name: '過剰適応モード',
+    en: 'OVER-ADAPTATION',
+    color: '#C45C8A',
+    oneliner: '合わせることで安全を作ってきた。自分がどこにいるか、少し見えにくくなっています。',
+    bodySign: '胸が閉じている感覚がある。呼吸が浅く、肩に力が入りやすい。',
+    states: [
+      '断れずに引き受けたあと、疲弊する',
+      '「私はどうしたいか」より「どうすれば場が収まるか」が先に来る',
+      '相手の顔色が気になって、本音を変えてしまう',
+      '自分の意見を言った後、言いすぎたか確認したくなる',
+    ],
+    fadeScenes: [
+      '誰かの期待に応え続けている時',
+      '「自分の感覚」より「正解」を優先している時',
+    ],
+    obsWork: '今日、一つだけ「これは私がしたいこと」か「これは誰かのためにしていること」かを確認してみてください。\n\n答えを出す必要はありません。\n<em>ただ、観察するだけで十分です。</em>',
+    todayStep: '今日、胸のあたりに何かありますか。\n重さでも、閉じている感覚でも——\nそれがあなたの今の状態です。',
+  },
+  STOP_AVOID: {
+    name: '停止回避モード',
+    en: 'STOP-AVOIDANCE',
+    color: '#E8A020',
+    oneliner: '動き続けることで、何かを遠ざけてきた。止まると何が来るか、少し怖いのかもしれません。',
+    bodySign: '肩が上がりやすい。胃のあたりが張る感覚がある。休んでいても落ち着かない。',
+    states: [
+      '予定が空くと、何かしなければという気になる',
+      '頑張っている間は調子がいいが、ふと止まると虚無感が来る',
+      '休むことに罪悪感がある',
+      'やることが終わると、すぐ次を探してしまう',
+    ],
+    fadeScenes: [
+      '何もしていない時間がある時',
+      '立ち止まって自分を感じる瞬間',
+    ],
+    obsWork: '今日、5分だけ「何もしない時間」を作ってみてください。\n\nスマホを置いて、ただ座る。\n<em>何が来るかを、ただ観察します。</em>',
+    todayStep: '胃のあたりに今何かありますか。\n張り感でも、空洞感でも——\nそれがあなたの今のサインです。',
+  },
+  PERFECT_DEFENSE: {
+    name: '鎧稼働モード',
+    en: 'ARMOR-ACTIVE',
+    color: '#8B6FD4',
+    oneliner: '「ちゃんとしていれば安全」という設定で動いてきた。有能さが、鎧になっているかもしれません。',
+    bodySign: '頭が重い。首や肩が凝る。「まだ足りない」という感覚がある。',
+    states: [
+      'ちゃんとしていない状態を人に見せることが怖い',
+      '人に頼む前に、自分でやり切ろうとする',
+      '完成度が低いものを出すことに強い抵抗がある',
+      '「もっとできるはず」が止まらない',
+    ],
+    fadeScenes: [
+      '準備が完全でないと感じる時',
+      '誰かに弱い部分を見せそうになる時',
+    ],
+    obsWork: '今日、「80点のままでいい」と思える場面を一つ探してみてください。\n\n完璧じゃないことを、誰かに見せる必要はありません。\n<em>自分の中で、ただ許可するだけで十分です。</em>',
+    todayStep: '今、頭や首のあたりに何かありますか。\n重さでも、緊張感でも——\nそれがあなたの今のサインです。',
+  },
+  EMOTION_BLOCK: {
+    name: '感情遮断モード',
+    en: 'EMOTION-BLOCKING',
+    color: '#5B8FD4',
+    oneliner: '感情を処理する前に、思考で覆いかぶせてきた。感覚より分析が先に来る状態です。',
+    bodySign: '胸のあたりが空洞のような感じがある。涙が出そうで出ない感覚がある。',
+    states: [
+      '悲しい時や怒った時、感情より先に理由を考える',
+      '感情的になることへの抵抗が強い',
+      '「なぜそう感じるのか」を分析してしまう',
+      '感情が動いているのに、表に出てこない',
+    ],
+    fadeScenes: [
+      '感情を感じそうになる時',
+      '誰かに気持ちを聞かれる時',
+    ],
+    obsWork: '今日、感情を分析せずに「感じたままにする」時間を1分作ってみてください。\n\n悲しければ悲しい。怒っていれば怒っている。\n<em>それを正当化する必要はありません。</em>',
+    todayStep: '今、胸のあたりはどんな感じですか。\n空洞感でも、重さでも——\nそれがあなたの今の状態です。',
+  },
+  ROLE_FIRST: {
+    name: '役割優先モード',
+    en: 'ROLE-PRIORITY',
+    color: '#4A9E8C',
+    oneliner: '「私」より「役割」が先に動いてきた。誰かのために動く時だけ、エンジンがかかりやすい状態です。',
+    bodySign: '鳩尾が重い。声が小さくなりやすい。自分のことを話すと少し居心地が悪い。',
+    states: [
+      '「私はどうしたいか」より「どうすべきか」が先に来る',
+      '誰かのためなら動けるが、自分のためだと動けない',
+      '自分の欲求を声に出すことに抵抗がある',
+      '役割を外れた自分に価値を感じにくい',
+    ],
+    fadeScenes: [
+      '役割のない時間がある時',
+      '「あなたはどうしたいの？」と聞かれる時',
+    ],
+    obsWork: '今日、「私がしたいこと」を一つだけ声に出してみてください。\n\n誰かに許可してもらう必要はありません。\n<em>自分に向けて、ただ言葉にするだけで十分です。</em>',
+    todayStep: '今、鳩尾のあたりに何かありますか。\n重さでも、詰まり感でも——\nそれがあなたの今のサインです。',
+  },
+  HYPER_VIGILANCE: {
+    name: '警戒過敏モード',
+    en: 'HYPER-VIGILANCE',
+    color: '#B8845A',
+    oneliner: '相手の反応を先読みすることで、安全を確保してきた。消耗が大きい状態です。',
+    bodySign: '目が疲れやすい。胃がキリキリする感覚がある。常に緊張の糸が張っている。',
+    states: [
+      '相手がどう思っているか気になって、返信を何度も考え直す',
+      '会話の後、言いすぎた・傷つけたかもしれないと振り返る',
+      '場の空気を読みすぎて疲れる',
+      '「嫌われるかもしれない」という感覚がある',
+    ],
+    fadeScenes: [
+      '誰かとコミュニケーションを取る時',
+      '自分の言動が相手にどう映るか考える時',
+    ],
+    obsWork: '今日、相手の反応を先読みするのを一回だけやめてみてください。\n\n言いたいことを、そのまま言う。\n<em>相手の反応は、相手のものです。</em>',
+    todayStep: '今、目や胃のあたりに何かありますか。\n疲れ感でも、緊張感でも——\nそれがあなたの今のサインです。',
+  },
+  SELF_PRESS: {
+    name: '自己圧迫モード',
+    en: 'SELF-PRESSURE',
+    color: '#3DA8B8',
+    oneliner: '自分を追い込むことで、動こうとしてきた。追い込まないと動けないという設定があるかもしれません。',
+    bodySign: '背中が張る。呼吸が途中で止まりやすい。「まだ足りない自分」への焦りがある。',
+    states: [
+      '自分を追い込むと逆にやる気が出る感覚がある',
+      '「もっとできるはず」という声が止まらない',
+      'できていないことに強くフォーカスする',
+      '褒められてもすぐ「でも」が来る',
+    ],
+    fadeScenes: [
+      '思うように進まない時',
+      '自分の現状を客観的に見る時',
+    ],
+    obsWork: '今日、「今日できたこと」を一つだけ声に出してみてください。\n\nどんなに小さくてもいい。\n<em>それだけで、今日は十分です。</em>',
+    todayStep: '今、背中や呼吸に何かありますか。\n張り感でも、詰まりでも——\nそれがあなたの今のサインです。',
+  },
+  DUTY_RUN: {
+    name: '義務感暴走モード',
+    en: 'DUTY-OVERDRIVE',
+    color: '#C9A84C',
+    oneliner: '「やりたい」より「やらなければ」から動いてきた。エネルギーが義務で消耗している状態です。',
+    bodySign: '朝が重い。やり終えても満たされない感覚がある。「次は何をしなければ」がすぐ来る。',
+    states: [
+      'やることが終わっても達成感より「次」が先に来る',
+      '義務が終わると虚無感がある',
+      '「したい」と「しなければ」の区別がつきにくい',
+      '頑張っているのになぜか満たされない',
+    ],
+    fadeScenes: [
+      '義務が終わった後',
+      '「なんのためにやっているのか」を考える時',
+    ],
+    obsWork: '今日、一つだけ「義務感ではなく、したいからする」ことを選んでみてください。\n\nどんなに小さくてもいい。\n<em>「したい」から動く感覚を、ただ確認します。</em>',
+    todayStep: '今、朝の身体の感覚を思い出してみてください。\n重さでも、空虚感でも——\nそれがあなたの今のサインです。',
+  },
+};
+
+// ===== 設問データ =====
+const questions = [
+  {
+    text: '誰かに頼まれると、断れずに引き受けてしまうことがある',
+    sub: '「断ったら悪い」という感覚が先に来る',
+    modes: { OVER_ADAPT: 3, ROLE_FIRST: 1 }
+  },
+  {
+    text: '予定が空くと、何かしなければという気持ちになる',
+    sub: '「何もしていない自分」が落ち着かない',
+    modes: { STOP_AVOID: 3, DUTY_RUN: 1 }
+  },
+  {
+    text: '悲しい時や怒った時、感情より先に「なぜそう感じるのか」を考える',
+    sub: '感情が動いているのに、分析が先に来る',
+    modes: { EMOTION_BLOCK: 3, PERFECT_DEFENSE: 1 }
+  },
+  {
+    text: '「私はどうしたいか」より「どうすべきか」が先に来ることが多い',
+    sub: '役割や期待が、自分の感覚より優先される',
+    modes: { ROLE_FIRST: 3, OVER_ADAPT: 1 }
+  },
+  {
+    text: '相手がどう思っているか気になって、返信や言葉を何度も考え直すことがある',
+    sub: '送った後も「言いすぎたかも」と振り返る',
+    modes: { HYPER_VIGILANCE: 3, OVER_ADAPT: 1 }
+  },
+  {
+    text: 'ちゃんとしていない状態を人に見せることに強い抵抗がある',
+    sub: '準備が整っていないと、外に出しにくい',
+    modes: { PERFECT_DEFENSE: 3, SELF_PRESS: 1 }
+  },
+  {
+    text: '自分を追い込むと、逆にやる気が出る感覚がある',
+    sub: '追い込まないと動けない、という感覚がある',
+    modes: { SELF_PRESS: 3, STOP_AVOID: 1 }
+  },
+  {
+    text: '頑張っているのに、やり終えた後でも満たされない感覚がある',
+    sub: '達成感より「次は何を」が先に来る',
+    modes: { DUTY_RUN: 3, STOP_AVOID: 1 }
+  },
+  {
+    text: '本音を言いそうになると、もっと丸い言葉に変えてしまう',
+    sub: '「そのまま言ったら傷つけるかも」が先に来る',
+    modes: { OVER_ADAPT: 2, HYPER_VIGILANCE: 2 }
+  },
+  {
+    text: '人に頼む前に、まず自分でやり切ろうとする',
+    sub: '「これくらい自分でできなければ」という感覚がある',
+    modes: { PERFECT_DEFENSE: 2, SELF_PRESS: 2 }
+  },
+  {
+    text: '誰かのためなら動けるが、自分のためだと動きにくい',
+    sub: '「私がしたい」という動機が少し見えにくい',
+    modes: { ROLE_FIRST: 3, DUTY_RUN: 1 }
+  },
+  {
+    text: '深呼吸しようとすると、途中で止まってしまうことがある',
+    sub: '息を深く吸い込む前に、何かが閉じる感覚',
+    modes: { EMOTION_BLOCK: 2, STOP_AVOID: 2 }
+  },
+  {
+    text: '休んでいても、「休んでいていいのか」という感覚がある',
+    sub: '身体は休んでいても、頭が止まらない',
+    modes: { DUTY_RUN: 2, STOP_AVOID: 2 }
+  },
+];
+
+// スコア配点
+const scoreMap = { 0: 0, 1: 0, 2: 1, 3: 2, 4: 3 };
+
+let currentQ = 0;
+let scores = {};
+let history = [];
+
+function initScores() {
+  Object.keys(modes).forEach(k => scores[k] = 0);
+  history = [];
+}
+
+function startDiagnosis() {
+  initScores();
+  currentQ = 0;
+  showScreen('screen-questions');
+  renderQuestion();
+}
+
+function goBack() {
+  if (currentQ <= 0 || history.length === 0) return;
+  const prev = history.pop();
+  const q = questions[prev.qIndex];
+  const sc = scoreMap[prev.val];
+  Object.entries(q.modes).forEach(([mode, weight]) => {
+    scores[mode] = Math.max(0, (scores[mode] || 0) - sc * weight);
+  });
+  currentQ--;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  const pct = (currentQ / questions.length * 100).toFixed(0);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = (currentQ + 1) + ' / ' + questions.length;
+
+  const opts = [
+    'とても近い',
+    'どちらかといえば近い',
+    'どちらとも言えない',
+    'あまり近くない',
+    'わからない',
+  ];
+
+  const area = document.getElementById('question-area');
+  area.style.opacity = '0';
+
+  setTimeout(() => {
+    area.innerHTML = `
+      <div class="question-animate">
+        <div class="q-category">OBSERVATION · ${String(currentQ + 1).padStart(2,'0')}</div>
+        <div class="q-text">${q.text}</div>
+        ${q.sub ? `<div class="q-sub">${q.sub}</div>` : ''}
+        <div class="options">
+          ${opts.map((o, i) => `
+            <button class="option-btn" onclick="selectAnswer(${i})">${o}</button>
+          `).join('')}
+        </div>
+        ${currentQ > 0 ? `
+        <div style="text-align:center;margin-top:24px;">
+          <button class="restart-btn" onclick="goBack()">← 前の質問に戻る</button>
+        </div>` : ''}
+      </div>
+    `;
+    requestAnimationFrame(() => {
+      area.style.opacity = '1';
+    });
+  }, 250);
+}
+
+function selectAnswer(val) {
+  const area = document.getElementById('question-area');
+  area.style.opacity = '0';
+
+  const q = questions[currentQ];
+  const sc = scoreMap[val];
+  history.push({ qIndex: currentQ, val });
+  Object.entries(q.modes).forEach(([mode, weight]) => {
+    scores[mode] = (scores[mode] || 0) + sc * weight;
+  });
+
+  currentQ++;
+  setTimeout(() => {
+    area.innerHTML = '';
+    if (currentQ >= questions.length) {
+      showResult();
+    } else {
+      renderQuestion();
+    }
+  }, 250);
+}
+
+function showResult() {
+  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  const mainKey = sorted[0][0];
+  const main = modes[mainKey];
+
+  // パーセント計算
+  const total = sorted.reduce((s, [, v]) => s + v, 0);
+  let running = 0;
+  const meterData = sorted.map(([key, val], i) => {
+    let pct;
+    if (i === sorted.length - 1) {
+      pct = Math.max(0, 100 - running);
+    } else {
+      pct = total > 0 ? Math.floor(val / total * 100) : 0;
+      running += pct;
+    }
+    return { key, val, pct, mode: modes[key] };
+  });
+
+  showScreen('screen-result');
+
+  document.getElementById('result-area').innerHTML = `
+    <div class="result-header">
+      <div class="result-eyebrow">現在作動しやすい適応パターン</div>
+      <div class="result-mode-badge" style="border-color:${main.color};color:${main.color};">
+        ${main.en}
+      </div>
+      <div class="result-title" style="color:${main.color};">
+        ${main.name}
+      </div>
+      <p class="result-oneliner">${main.oneliner}</p>
+    </div>
+
+    <div class="meter-section">
+      <div class="meter-label">ADAPTIVE MODE ANALYSIS</div>
+      <p style="font-size:12px;color:var(--text-dim);text-align:center;line-height:1.9;margin-bottom:20px;">今どの適応パターンが作動しやすいかを示しています。<br>これは人格ではなく、現在の状態の観察です。</p>
+      ${meterData.map(m => `
+        <div class="meter-row">
+          <div class="meter-name" style="color:${m.mode.color};">${m.mode.name.replace('モード','')}</div>
+          <div class="meter-bar">
+            <div class="meter-bar-inner" style="background:${m.mode.color};width:0%" data-pct="${m.pct}"></div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="result-card" style="border-color:${main.color}20;">
+      <div class="result-card-label" style="color:${main.color};">◆ 今起きていること</div>
+      <ul class="result-card-body">
+        ${main.states.map(s => `<li style="color:var(--text-mid);">${s}</li>`).join('')}
+      </ul>
+    </div>
+
+    <div class="body-signal">
+      <div class="body-signal-label">◆ 身体のサイン</div>
+      <div class="body-signal-body">${main.bodySign}</div>
+    </div>
+
+    <div class="result-card" style="border-color:rgba(255,255,255,0.06);">
+      <div class="result-card-label" style="color:var(--text-dim);">◆ 感覚が消えやすい場面</div>
+      <ul class="result-card-body">
+        ${main.fadeScenes.map(s => `<li>${s}</li>`).join('')}
+      </ul>
+    </div>
+
+    <div class="obs-work">
+      <div class="obs-title">◆ 感覚を戻す小さな実験</div>
+      <div class="obs-body">${main.obsWork.replace(/\n/g, '<br>')}</div>
+    </div>
+
+    <div class="today-step">
+      <div class="today-step-label">◆ 今日の一歩</div>
+      <div class="today-step-body">${main.todayStep.replace(/\n/g, '<br>')}</div>
+    </div>
+
+    <div class="warning-text">
+      この観察結果は、あなたの人格や能力を示すものではありません。<br>
+      適応パターンは状況・時期・関係性によって変化します。<br><br>
+      「今ここで、このモードが作動しやすい」<br>
+      という静かな気づきとして、受け取ってください。
+    </div>
+
+    <div class="cta-section">
+      <div class="cta-title">
+        本来のエンジンと、<em>一致していますか？</em>
+      </div>
+      <p class="cta-sub">
+        今の適応モードと、生まれ持ったコアエンジン。<br>
+        2つを見比べた時に、ズレの構造が見えてきます。
+      </p>
+      <a href="lunara-origin-engine.html" class="btn-line primary">
+        ✦ コアエンジン診断を受ける
+      </a>
+
+      <div class="divider"></div>
+
+      <div style="padding:24px;background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.08);margin-bottom:20px;">
+        <div style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.35em;color:var(--gold);margin-bottom:14px;">◆ 観察を続けるために</div>
+        <p style="font-size:13px;color:var(--text-dim);line-height:2.4;">
+          この診断は、答えではありません。<br><br>
+          日常で自分の反応を観察するための<br>
+          入口として使ってください。<br><br>
+          LINEでは、身体感覚への問いを<br>
+          定期的にお届けしています。
+        </p>
+      </div>
+
+      <a href="https://lin.ee/qoNCvEH" target="_blank" class="btn-line">
+        LunaRa Lab . Hideka — LINE登録
+      </a>
+      <p class="cta-note">大切なのは診断結果より、日常で何を感じるかです。</p>
+
+      <div style="text-align:center;padding:24px 0 0;">
+        <button class="restart-btn" onclick="restartApp()">← もう一度観察する</button>
+      </div>
+    </div>
+  `;
+
+  // メーターアニメーション
+  setTimeout(() => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.querySelectorAll('.meter-bar-inner').forEach(el => {
+          el.style.width = el.dataset.pct + '%';
+        });
+      });
+    });
+  }, 300);
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function restartApp() {
+  initScores();
+  currentQ = 0;
+  showScreen('screen-cover');
+}
+</script>
+</body>
+</html>
